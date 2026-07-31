@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Love Map: Tọa Độ Tình Yêu</title>
+    
+    <!-- THẺ NÀY ĐỂ THAY ĐỔI ICON TRÁI ĐẤT THÀNH LOGO CỦA BẠN -->
+    <link rel="icon" type="image/png" href="./logo.png">
+    
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,7 +26,7 @@
 
         body {
             font-family: var(--font-body);
-            background-color: var(--warm-beige); /* Nền ngoài màu phong bì */
+            background-color: var(--warm-beige);
             color: var(--text-dark);
             line-height: 1.6;
             padding: 20px;
@@ -32,14 +36,13 @@
         .letter-container {
             max-width: 1000px;
             margin: 0 auto;
-            background-color: var(--ivory); /* Nền giấy lá thư */
+            background-color: var(--ivory);
             padding: 40px 50px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             border: 1px solid #c9c1b9;
             position: relative;
         }
         
-        /* Họa tiết góc thư */
         .letter-container::before, .letter-container::after {
             content: ''; position: absolute; width: 40px; height: 40px; border: 2px solid var(--deep-teal);
         }
@@ -53,7 +56,7 @@
         .section-title { font-family: var(--font-heading); text-align: center; color: var(--deep-teal); font-size: 2rem; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 15px; }
         .section-title i { font-size: 1.2rem; color: var(--warm-beige); }
 
-        /* Accordion: Thông tin chương trình */
+        /* Accordion */
         .info-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 50px; }
         .accordion-item { border: 1px solid var(--warm-beige); background: #fff; }
         .accordion-header {
@@ -68,7 +71,7 @@
         .accordion-content.active { padding: 20px; max-height: 1000px; } 
         .accordion-content ul { padding-left: 20px; }
 
-        /* Hồ sơ nhân vật (Poster Style) */
+        /* Hồ sơ nhân vật */
         .cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; margin-bottom: 30px; }
         .cast-card {
             background: #fff; padding: 15px; border: 1px solid var(--warm-beige);
@@ -80,7 +83,6 @@
         .cast-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .cast-name { font-family: var(--font-heading); color: var(--deep-teal); font-size: 1.5rem; font-weight: bold; }
         
-        /* Icon Khóa */
         .lock-icon { position: absolute; top: 10px; right: 10px; background: rgba(15, 94, 104, 0.9); color: var(--ivory); width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 1rem; z-index: 10; }
         .no-cast-msg { text-align: center; color: #888; font-style: italic; width: 100%; grid-column: 1/-1; padding: 20px; }
 
@@ -110,7 +112,7 @@
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
         .gallery-item:hover { border-color: var(--deep-teal); }
 
-        /* Admin Mode Styles */
+        /* Admin Styles */
         .admin-indicator { display: none; background: #c0392b; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; position: absolute; top: 0px; right: 0px; }
         .is-admin .admin-indicator { display: block; }
         .admin-only { display: none !important; }
@@ -127,7 +129,6 @@
         .admin-btn.delete { background: #c0392b; }
         .admin-btn.small { padding: 4px 8px; font-size: 0.75rem; position: absolute; top: 0; right: 0; }
         
-        /* Bảng điều khiển Khóa Profile (Admin) */
         .lock-settings { background: #ffeaa7; padding: 15px; border: 1px solid #fdcb6e; margin-bottom: 20px; }
         .lock-settings label { font-weight: bold; color: #d35400; }
         .lock-settings input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #fdcb6e; }
@@ -152,6 +153,9 @@
     </style>
 </head>
 <body>
+    <!-- THẺ INPUT ẨN ĐỂ XỬ LÝ UPLOAD ẢNH (Tuyệt đối không dùng Link nữa) -->
+    <input type="file" id="global-image-upload" accept="image/*" style="display: none;">
+
     <div class="letter-container">
         <!-- Header -->
         <header>
@@ -165,13 +169,13 @@
         </header>
 
         <main>
-            <!-- Thông tin chương trình (Accordion) -->
+            <!-- Thông tin chương trình -->
             <section class="info-section">
                 <h2 class="section-title"><i class="fas fa-envelope"></i> Quy chế chương trình <i class="fas fa-envelope"></i></h2>
                 <div id="show-info-container" class="info-grid"></div>
             </section>
 
-            <!-- Hồ sơ nhân vật (Poster) -->
+            <!-- Hồ sơ nhân vật -->
             <section class="cast-section">
                 <h2 class="section-title"><i class="fas fa-user-secret"></i> Hồ sơ người tham gia <i class="fas fa-user-secret"></i></h2>
                 <div id="cast-container" class="cast-grid"></div>
@@ -223,6 +227,7 @@
         let isAdmin = false;
         const adminPassword = "bhnt2006";
         let currentOpenModalIndex = null;
+        let currentUploadTarget = null; // Biến lưu trữ hành động upload ảnh hiện tại
 
         // --- HỘP NHẠC ---
         const audioEl = document.getElementById('bg-music');
@@ -263,6 +268,41 @@
             }
         });
 
+        // --- XỬ LÝ UPLOAD ẢNH CỐ ĐỊNH CHUẨN HTML ---
+        document.getElementById('global-image-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64Image = event.target.result;
+                if (currentUploadTarget) {
+                    try {
+                        if (currentUploadTarget.type === 'avatar') {
+                            appData.characters[currentUploadTarget.index].avatar = base64Image;
+                        } else if (currentUploadTarget.type === 'gallery') {
+                            if (!appData.characters[currentUploadTarget.index].gallery) {
+                                appData.characters[currentUploadTarget.index].gallery = [];
+                            }
+                            appData.characters[currentUploadTarget.index].gallery.push(base64Image);
+                        }
+                        saveData();
+                        openModal(currentUploadTarget.index);
+                        renderCharacters();
+                    } catch(err) {
+                        alert("Lỗi: File ảnh quá lớn so với bộ nhớ trình duyệt (Giới hạn ~5MB). Vui lòng chọn ảnh nhẹ hơn hoặc nén lại trước khi tải lên!");
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function triggerGlobalImageUpload(type, index) {
+            currentUploadTarget = { type: type, index: index };
+            const fileInput = document.getElementById('global-image-upload');
+            fileInput.value = ''; // Reset input để có thể chọn lại cùng 1 file
+            fileInput.click();
+        }
+
         // --- RENDER THÔNG TIN CHƯƠNG TRÌNH (ACCORDION) ---
         function renderShowInfo() {
             const container = document.getElementById('show-info-container');
@@ -270,11 +310,7 @@
             appData.showInfo.forEach((info, index) => {
                 const item = document.createElement('div');
                 item.className = 'accordion-item';
-                
-                const headerHtml = isAdmin 
-                    ? `<div style="flex:1" contenteditable="true" onblur="updateInfo(${index}, 'title', this.innerText)">${info.title}</div>`
-                    : `<span>${info.title}</span>`;
-
+                const headerHtml = isAdmin ? `<div style="flex:1" contenteditable="true" onblur="updateInfo(${index}, 'title', this.innerText)">${info.title}</div>` : `<span>${info.title}</span>`;
                 item.innerHTML = `
                     <button class="accordion-header" onclick="toggleAccordion(this)">
                         ${headerHtml}
@@ -292,11 +328,8 @@
             if(event.target.getAttribute('contenteditable') === 'true') return; 
             btn.classList.toggle('active');
             const content = btn.nextElementSibling;
-            if (btn.classList.contains('active')) {
-                content.classList.add('active');
-            } else {
-                content.classList.remove('active');
-            }
+            if (btn.classList.contains('active')) { content.classList.add('active'); } 
+            else { content.classList.remove('active'); }
         }
 
         // --- RENDER NHÂN VẬT ---
@@ -311,9 +344,7 @@
                 container.innerHTML += `
                     <div class="cast-card" onclick="handleCardClick(${index})">
                         ${lockHtml}
-                        <div class="cast-img-wrapper">
-                            <img src="${char.avatar}" alt="${char.name}">
-                        </div>
+                        <div class="cast-img-wrapper"><img src="${char.avatar}" alt="${char.name}"></div>
                         <div class="cast-name">${char.name}</div>
                     </div>
                 `;
@@ -324,12 +355,9 @@
             const char = appData.characters[index];
             if (char.isLocked && !isAdmin) {
                 const answer = prompt(`BẢO MẬT HỒ SƠ:\n${char.lockQuestion}\n\n(Vui lòng nhập câu trả lời để mở khóa)`);
-                if (answer === null) return; // Nhấn Cancel
-                if (answer.trim() !== "") { // Chỉ cần có nhập dữ liệu là mở
-                    openModal(index);
-                } else {
-                    alert("Bạn chưa nhập câu trả lời. Không thể mở hồ sơ này!");
-                }
+                if (answer === null) return;
+                if (answer.trim() !== "") { openModal(index); } 
+                else { alert("Bạn chưa nhập câu trả lời. Không thể mở hồ sơ này!"); }
             } else {
                 openModal(index);
             }
@@ -341,7 +369,6 @@
             const char = appData.characters[index];
             const modalBody = document.getElementById('modal-body');
             
-            // Xử lý Gallery
             let galleryImages = '';
             if(char.gallery && char.gallery.length > 0) {
                 char.gallery.forEach((img, i) => {
@@ -353,16 +380,15 @@
                 });
             }
 
-            // Xử lý Giao diện Admin
             let adminControls = isAdmin ? `
                 <div style="margin-top: 10px;">
-                    <button class="admin-btn" onclick="changeAvatar(${index})"><i class="fas fa-portrait"></i> Đổi Ảnh Đại Diện (File)</button>
+                    <button class="admin-btn" onclick="triggerGlobalImageUpload('avatar', ${index})"><i class="fas fa-portrait"></i> Tải Ảnh Đại Diện</button>
                     <button class="admin-btn delete" onclick="deleteCharacter(${index})"><i class="fas fa-trash"></i> Xóa Profile</button>
                 </div>
                 <div class="lock-settings admin-only">
                     <label><input type="checkbox" id="lock-checkbox" ${char.isLocked ? 'checked' : ''} onchange="updateLock(${index})"> Kích hoạt Khóa Profile</label>
                     <div id="lock-inputs" style="display: ${char.isLocked ? 'block' : 'none'};">
-                        <label>Câu hỏi mở khóa (Chỉ cần người dùng nhập câu trả lời là sẽ mở):</label>
+                        <label>Câu hỏi mở khóa (Người dùng chỉ cần gõ bất cứ gì là mở được):</label>
                         <input type="text" id="lock-question" value="${char.lockQuestion || ''}" onblur="updateLockData(${index})" placeholder="Ví dụ: Ai là người hướng nội nhất?">
                     </div>
                 </div>
@@ -376,14 +402,13 @@
                             <div class="gallery-title">Kho ảnh</div>
                             <div class="gallery-grid">
                                 ${galleryImages}
-                                ${isAdmin ? `<div class="gallery-item" style="display:flex; justify-content:center; align-items:center; border:2px dashed var(--deep-teal);" onclick="addGalleryImg(${index})"><i class="fas fa-plus" style="color:var(--deep-teal)"></i></div>` : ''}
+                                ${isAdmin ? `<div class="gallery-item" style="display:flex; justify-content:center; align-items:center; border:2px dashed var(--deep-teal);" onclick="triggerGlobalImageUpload('gallery', ${index})"><i class="fas fa-plus" style="color:var(--deep-teal)"></i></div>` : ''}
                             </div>
                         </div>
                     </div>
                     <div class="modal-right">
                         ${adminControls}
                         <h2 class="modal-title" ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'name', this.innerText)">${char.name}</h2>
-                        
                         <div class="detail-block"><strong>Quê quán:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'hometown', this.innerText)">${char.hometown}</span></div>
                         <div class="detail-block"><strong>Ngoại hình:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'appearance', this.innerText)">${char.appearance}</span></div>
                         <div class="detail-block"><strong>Ấn tượng đầu:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'firstImpression', this.innerText)">${char.firstImpression}</span></div>
@@ -395,41 +420,8 @@
             document.getElementById('character-modal').style.display = 'block';
         }
 
-        // Logic Gallery & Đổi Ảnh chính
         function changeMainImg(src) { document.getElementById('main-modal-img').src = src; }
         
-        // --- XỬ LÝ UPLOAD ẢNH BẰNG FILE TRỰC TIẾP ---
-        function triggerImageUpload(callback) {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    callback(event.target.result); // Chuỗi Base64
-                };
-                reader.readAsDataURL(file);
-            };
-            input.click();
-        }
-
-        function changeAvatar(index) {
-            triggerImageUpload((base64Image) => {
-                appData.characters[index].avatar = base64Image;
-                saveData(); renderCharacters(); openModal(index);
-            });
-        }
-
-        function addGalleryImg(index) {
-            triggerImageUpload((base64Image) => {
-                if(!appData.characters[index].gallery) appData.characters[index].gallery = [];
-                appData.characters[index].gallery.push(base64Image);
-                saveData(); openModal(index);
-            });
-        }
-
         function removeGalleryImg(charIndex, imgIndex) {
             event.stopPropagation();
             if(confirm("Xóa ảnh này khỏi kho?")) {
@@ -438,21 +430,16 @@
             }
         }
 
-        // Logic Admin (Khóa, Sửa, Thêm)
+        // Logic Admin
         function updateLock(index) {
             const isChecked = document.getElementById('lock-checkbox').checked;
             appData.characters[index].isLocked = isChecked;
             document.getElementById('lock-inputs').style.display = isChecked ? 'block' : 'none';
             saveData(); renderCharacters();
         }
-        function updateLockData(index) {
-            appData.characters[index].lockQuestion = document.getElementById('lock-question').value;
-            saveData();
-        }
-
+        function updateLockData(index) { appData.characters[index].lockQuestion = document.getElementById('lock-question').value; saveData(); }
         function updateInfo(index, field, value) { appData.showInfo[index][field] = value; saveData(); }
         function updateChar(index, field, value) { appData.characters[index][field] = value; saveData(); renderCharacters(); }
-
         function deleteCharacter(index) {
             if(confirm("Bạn có chắc muốn xóa vĩnh viễn Profile này?")) {
                 appData.characters.splice(index, 1); saveData();
@@ -471,17 +458,15 @@
 
         function saveData() { localStorage.setItem('loveMapData', JSON.stringify(appData)); }
 
-        // Đóng Modal
         document.querySelector('.close-btn').addEventListener('click', () => { document.getElementById('character-modal').style.display = 'none'; });
         window.onclick = function(event) { if (event.target == document.getElementById('character-modal')) { document.getElementById('character-modal').style.display = 'none'; } }
 
-        // --- KÍCH HOẠT ADMIN MODE ---
         document.getElementById('main-title').addEventListener('dblclick', () => {
             if(!isAdmin) {
                 const pass = prompt("Nhập mã truy cập Quản trị viên:");
                 if (pass === adminPassword) {
                     isAdmin = true; document.body.classList.add('is-admin');
-                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n- Các tính năng Upload File, Chỉnh sửa, Khóa Profile đã sẵn sàng.");
+                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n- Các tính năng Upload Ảnh File (Không dùng link), Chỉnh sửa, Khóa Profile đã sẵn sàng.");
                     renderShowInfo(); renderCharacters();
                     if(currentOpenModalIndex !== null && document.getElementById('character-modal').style.display === 'block') { openModal(currentOpenModalIndex); }
                 } else if (pass !== null) alert("Mã sai!");
@@ -492,7 +477,6 @@
             }
         });
 
-        // Khởi chạy
         renderShowInfo();
         renderCharacters();
     </script>
