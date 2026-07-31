@@ -216,7 +216,7 @@
                 { title: "Lệnh RP", content: "Gõ <code>/batdau</code> để tham gia hành trình. Gõ <code>/thongtin</code> để kiểm tra chỉ số tình cảm." }
             ],
             characters: [], 
-            playlist: [] // Chuyển từ musicData (1 bài) sang playlist (Nhiều bài)
+            playlist: [] 
         };
 
         let appData = defaultData;
@@ -229,7 +229,6 @@
         localforage.getItem('loveMapData').then(function(value) {
             if (value) {
                 appData = value;
-                // Migrate dữ liệu cũ nếu người dùng đã lưu bằng biến musicData
                 if(appData.musicData && (!appData.playlist || appData.playlist.length === 0)) {
                     appData.playlist = [{ name: "Nhạc nền hiện tại", data: appData.musicData }];
                     delete appData.musicData;
@@ -248,30 +247,37 @@
         function initApp() {
             renderShowInfo();
             renderCharacters();
-            if(appData.playlist.length > 0) {
-                audioEl.src = appData.playlist[0].data;
-            }
         }
 
-        // --- HỘP NHẠC (PLAYLIST) ---
+        // --- HỘP NHẠC (PLAYLIST PHÁT NGẪU NHIÊN) ---
         const audioEl = document.getElementById('bg-music');
         const musicBtn = document.getElementById('music-toggle');
         const musicContainer = document.getElementById('music-notes-container');
         let noteInterval;
         let isPlaying = false;
-        let currentSongIndex = 0;
+        let currentSongIndex = -1; // -1 nghĩa là chưa phát bài nào
 
-        function playSong(index) {
+        // Hàm bốc ngẫu nhiên 1 bài hát
+        function playRandomSong() {
             if(appData.playlist.length === 0) return;
-            if(index >= appData.playlist.length) index = 0;
-            currentSongIndex = index;
+
+            if (appData.playlist.length === 1) {
+                currentSongIndex = 0;
+            } else {
+                let nextIndex;
+                do {
+                    nextIndex = Math.floor(Math.random() * appData.playlist.length);
+                } while (nextIndex === currentSongIndex); // Tránh bốc trúng bài vừa phát
+                currentSongIndex = nextIndex;
+            }
+
             audioEl.src = appData.playlist[currentSongIndex].data;
             audioEl.play().catch(e => console.log("Trình duyệt chặn autoplay", e));
         }
 
-        // Tự động nhảy bài khi hết bài
+        // Tự động nhảy bài ngẫu nhiên khi hết bài
         audioEl.addEventListener('ended', () => {
-            playSong(currentSongIndex + 1);
+            playRandomSong();
         });
 
         musicBtn.addEventListener('click', () => {
@@ -282,8 +288,8 @@
                 isPlaying = false;
             } else { 
                 if (appData.playlist && appData.playlist.length > 0) {
-                    if (!audioEl.src || audioEl.ended) {
-                        playSong(currentSongIndex);
+                    if (!audioEl.src || audioEl.ended || currentSongIndex === -1) {
+                        playRandomSong();
                     } else {
                         audioEl.play().catch(() => alert("Lỗi phát nhạc!"));
                     }
@@ -291,14 +297,15 @@
                     spawnNotes(); 
                     isPlaying = true;
                 } else {
-                    alert("Chưa có nhạc nền! Xin vui lòng tải nhạc lên.");
+                    alert("Chưa có bài nhạc nào trong danh sách! Xin vui lòng tải nhạc lên.");
                 }
             }
         });
 
         function spawnNotes() {
-            // Đa dạng hóa các icon lơ lửng
-            const icons = ['fa-music', 'fa-itunes-note', 'fa-heart', 'fa-star', 'fa-compact-disc'];
+            // Sử dụng các icon chuẩn miễn phí (Không dùng brand/pro icon để tránh bị lỗi ô vuông)
+            const icons = ['fa-music', 'fa-heart', 'fa-star', 'fa-headphones'];
+            
             noteInterval = setInterval(() => {
                 const note = document.createElement('i');
                 const randomIcon = icons[Math.floor(Math.random() * icons.length)];
@@ -333,10 +340,6 @@
                     if (loadedCount === files.length) {
                         saveData(); 
                         renderPlaylistAdmin();
-                        if (appData.playlist.length === files.length) {
-                            // Nếu đây là lần tải đầu tiên, gán bài 1 vào player
-                            audioEl.src = appData.playlist[0].data;
-                        }
                         loadingOverlay.style.display = 'none';
                         alert("Tải danh sách nhạc thành công!");
                     }
@@ -367,18 +370,18 @@
                 appData.playlist.splice(index, 1);
                 saveData();
                 renderPlaylistAdmin();
-                // Reset nhạc nếu đang xóa bài hát đang phát
+                
+                // Nếu bài đang phát bị xóa thì dừng nhạc
                 if(currentSongIndex === index) {
                     audioEl.pause();
                     musicBtn.classList.remove('playing');
                     clearInterval(noteInterval);
                     isPlaying = false;
-                    if(appData.playlist.length > 0) {
-                        audioEl.src = appData.playlist[0].data;
-                        currentSongIndex = 0;
-                    } else {
-                        audioEl.src = "";
-                    }
+                    currentSongIndex = -1;
+                    audioEl.src = "";
+                } else if (currentSongIndex > index) {
+                    // Chỉnh lại index nếu bài bị xóa nằm trước bài đang phát
+                    currentSongIndex--;
                 }
             }
         }
@@ -588,7 +591,7 @@
                 const pass = prompt("Nhập mã truy cập Quản trị viên:");
                 if (pass === adminPassword) {
                     isAdmin = true; document.body.classList.add('is-admin');
-                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n\nGiờ đây bạn có thể tải lên toàn bộ Playlist (Nhiều file MP3 cùng lúc).");
+                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!");
                     renderShowInfo(); renderCharacters(); renderPlaylistAdmin();
                     if(currentOpenModalIndex !== null && document.getElementById('character-modal').style.display === 'block') { openModal(currentOpenModalIndex); }
                 } else if (pass !== null) alert("Mã sai!");
