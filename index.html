@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Love Map: Tọa Độ Tình Yêu</title>
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary-blue: #234b5c;
-            --light-blue: #8ba9b9;
-            --bg-cream: #f4f6f8;
-            --text-dark: #1c2b36;
-            --border-color: #a4bccc;
+            --deep-teal: #0F5E68;
+            --ivory: #F7F4EE;
+            --warm-beige: #DAD2CB;
+            --text-dark: #1d3336;
             --font-heading: 'Playfair Display', serif;
             --font-body: 'Montserrat', sans-serif;
         }
@@ -23,167 +22,170 @@
 
         body {
             font-family: var(--font-body);
-            background-color: var(--bg-cream);
+            background-color: var(--warm-beige); /* Nền ngoài màu phong bì */
             color: var(--text-dark);
             line-height: 1.6;
-            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+            padding: 20px;
         }
 
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        /* Khung lá thư chính */
+        .letter-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--ivory); /* Nền giấy lá thư */
+            padding: 40px 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #c9c1b9;
+            position: relative;
+        }
+        
+        /* Họa tiết góc thư */
+        .letter-container::before, .letter-container::after {
+            content: ''; position: absolute; width: 40px; height: 40px; border: 2px solid var(--deep-teal);
+        }
+        .letter-container::before { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+        .letter-container::after { bottom: 20px; right: 20px; border-left: none; border-top: none; }
 
         /* Header */
-        header {
-            text-align: center; padding: 50px 20px 30px;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 40px; position: relative;
+        header { text-align: center; padding-bottom: 30px; border-bottom: 2px dashed var(--warm-beige); margin-bottom: 40px; position: relative; }
+        h1 { font-family: var(--font-heading); color: var(--deep-teal); font-size: 2.8rem; letter-spacing: 2px; cursor: pointer; user-select: none; }
+
+        .section-title { font-family: var(--font-heading); text-align: center; color: var(--deep-teal); font-size: 2rem; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .section-title i { font-size: 1.2rem; color: var(--warm-beige); }
+
+        /* Accordion: Thông tin chương trình */
+        .info-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 50px; }
+        .accordion-item { border: 1px solid var(--warm-beige); background: #fff; }
+        .accordion-header {
+            width: 100%; text-align: left; padding: 15px 20px; background: var(--ivory); border: none;
+            color: var(--deep-teal); font-family: var(--font-heading); font-size: 1.2rem; font-weight: bold;
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s;
         }
+        .accordion-header:hover { background: var(--warm-beige); }
+        .accordion-header i { transition: transform 0.3s; }
+        .accordion-header.active i { transform: rotate(180deg); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; background: #fff; padding: 0 20px; }
+        .accordion-content.active { padding: 20px; max-height: 1000px; } /* Mở rộng tối đa */
+        .accordion-content ul { padding-left: 20px; }
 
-        h1 {
-            font-family: var(--font-heading); color: var(--primary-blue);
-            font-size: 2.5rem; letter-spacing: 2px; margin-bottom: 10px;
-            cursor: pointer; user-select: none;
-        }
-
-        .subtitle { font-style: italic; color: var(--light-blue); letter-spacing: 1px; }
-
-        .section-title {
-            font-family: var(--font-heading); text-align: center;
-            color: var(--primary-blue); font-size: 1.8rem;
-            margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 15px;
-        }
-        .section-title i { font-size: 1rem; color: var(--light-blue); }
-
-        /* Show Info */
-        .info-grid {
-            display: grid; grid-template-columns: 1fr; gap: 20px;
-            background: #fff; padding: 30px; border: 1px solid var(--border-color);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 8px;
-        }
-        .info-item h3 { color: var(--primary-blue); font-family: var(--font-heading); margin-bottom: 8px; font-size: 1.2rem; }
-        .info-item p, .info-item ul { font-size: 0.95rem; color: #444; }
-        .info-item ul { padding-left: 20px; }
-
-        /* Character Grid */
-        .cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        /* Hồ sơ nhân vật (Poster Style) */
+        .cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; margin-bottom: 30px; }
         .cast-card {
-            background: #fff; border: 1px solid var(--border-color); border-radius: 8px;
-            overflow: hidden; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease;
-            text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            background: #fff; padding: 15px; border: 1px solid var(--warm-beige);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s ease;
+            position: relative; text-align: center;
         }
-        .cast-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(35, 75, 92, 0.15); }
-        .cast-img-wrapper { width: 100%; aspect-ratio: 3/4; overflow: hidden; }
+        .cast-card:hover { transform: translateY(-10px) rotate(2deg); box-shadow: 0 15px 25px rgba(15, 94, 104, 0.2); }
+        .cast-img-wrapper { width: 100%; aspect-ratio: 3/4; overflow: hidden; border: 1px solid var(--warm-beige); margin-bottom: 15px; position: relative; }
         .cast-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .cast-info { padding: 15px; }
-        .cast-name { font-family: var(--font-heading); color: var(--primary-blue); font-size: 1.2rem; font-weight: bold; }
+        .cast-name { font-family: var(--font-heading); color: var(--deep-teal); font-size: 1.5rem; font-weight: bold; }
+        
+        /* Icon Khóa */
+        .lock-icon { position: absolute; top: 10px; right: 10px; background: rgba(15, 94, 104, 0.9); color: var(--ivory); width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 1rem; z-index: 10; }
         .no-cast-msg { text-align: center; color: #888; font-style: italic; width: 100%; grid-column: 1/-1; padding: 20px; }
 
-        /* Modal */
-        .modal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
-            width: 100%; height: 100%; background-color: rgba(28, 43, 54, 0.8); backdrop-filter: blur(5px);
-        }
+        /* Modal Chi tiết nhân vật */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(29, 51, 54, 0.8); backdrop-filter: blur(5px); }
         .modal-content {
-            background-color: var(--bg-cream); margin: 5% auto; padding: 30px;
-            border: 2px solid var(--primary-blue); width: 90%; max-width: 800px;
-            border-radius: 8px; position: relative; max-height: 85vh; overflow-y: auto;
+            background-color: var(--ivory); margin: 3% auto; padding: 40px; border: 2px solid var(--deep-teal);
+            width: 95%; max-width: 900px; position: relative; max-height: 90vh; overflow-y: auto;
         }
-        .close-btn {
-            position: absolute; right: 20px; top: 15px; color: var(--primary-blue);
-            font-size: 28px; font-weight: bold; cursor: pointer;
-        }
-        .modal-header { display: flex; gap: 20px; margin-bottom: 25px; align-items: center; }
-        .modal-avatar { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-blue); }
-        .modal-title { font-family: var(--font-heading); color: var(--primary-blue); font-size: 2rem; }
+        .close-btn { position: absolute; right: 25px; top: 20px; color: var(--deep-teal); font-size: 30px; font-weight: bold; cursor: pointer; }
+        
+        .modal-layout { display: flex; gap: 30px; flex-wrap: wrap; }
+        .modal-left { flex: 1; min-width: 300px; }
+        .modal-right { flex: 2; min-width: 300px; }
+        
+        .modal-main-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .modal-title { font-family: var(--font-heading); color: var(--deep-teal); font-size: 2.5rem; margin-bottom: 20px; border-bottom: 2px solid var(--warm-beige); padding-bottom: 10px; }
+        
         .detail-block { margin-bottom: 15px; }
-        .detail-block strong { color: var(--primary-blue); font-family: var(--font-heading); }
+        .detail-block strong { color: var(--deep-teal); font-family: var(--font-heading); font-size: 1.1rem; }
 
-        /* Hộp Nhạc (Music Player) */
-        .music-player { position: fixed; bottom: 30px; right: 30px; z-index: 999; }
-        .music-btn {
-            width: 60px; height: 60px; border-radius: 50%;
-            background: var(--primary-blue); color: white; border: 2px solid var(--border-color);
-            cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 1.5rem;
-            transition: transform 0.3s; display: flex; align-items: center; justify-content: center;
-        }
-        .music-btn:hover { transform: scale(1.1); }
-        .music-btn.playing { animation: spin 4s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Nốt nhạc bay */
-        #music-notes-container { position: absolute; bottom: 50px; left: 15px; width: 30px; }
-        .floating-note {
-            position: absolute; bottom: 0; color: var(--primary-blue);
-            font-size: 1.2rem; opacity: 0; animation: floatUp 2.5s ease-out forwards; pointer-events: none;
-        }
-        @keyframes floatUp {
-            0% { transform: translateY(0) scale(0.8); opacity: 1; }
-            50% { opacity: 1; transform: translateY(-60px) scale(1.2) translateX(15px); }
-            100% { transform: translateY(-120px) scale(1) translateX(-10px); opacity: 0; }
-        }
+        /* Kho ảnh (Gallery) */
+        .gallery-container { margin-top: 20px; }
+        .gallery-title { font-family: var(--font-heading); color: var(--deep-teal); margin-bottom: 10px; font-size: 1.3rem; }
+        .gallery-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+        .gallery-item { width: 80px; height: 80px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; position: relative; }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+        .gallery-item:hover { border-color: var(--deep-teal); }
 
         /* Admin Mode Styles */
-        .admin-indicator {
-            display: none; background: #e74c3c; color: white; padding: 5px 15px;
-            border-radius: 20px; font-size: 0.8rem; font-weight: bold; position: absolute; top: 10px; right: 20px;
-        }
+        .admin-indicator { display: none; background: #c0392b; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; position: absolute; top: 0px; right: 0px; }
         .is-admin .admin-indicator { display: block; }
         .admin-only { display: none !important; }
         .is-admin .admin-only { display: inline-block !important; }
 
-        .admin-audio-panel {
-            background: #fff; border: 1px dashed var(--primary-blue); padding: 15px;
-            margin: 20px auto 0; max-width: 500px; text-align: center; border-radius: 8px;
-        }
+        .admin-audio-panel { background: #fff; border: 1px dashed var(--deep-teal); padding: 15px; margin: 20px auto 0; max-width: 500px; text-align: center; }
         .is-admin .admin-audio-panel { display: block !important; }
-        .admin-audio-panel input { margin-top: 10px; }
-        .audio-note { font-size: 0.8rem; color: #666; margin-top: 8px; font-style: italic; }
 
-        .is-admin [contenteditable="true"] { outline: 1px dashed #e74c3c; padding: 2px; background: rgba(231, 76, 60, 0.05); }
-        .is-admin [contenteditable="true"]:focus { outline: 2px solid #e74c3c; background: #fff; }
-        .admin-btn {
-            background: var(--primary-blue); color: white; border: none; padding: 8px 15px;
-            cursor: pointer; border-radius: 5px; font-family: var(--font-body); margin: 5px 0; font-size: 0.9rem;
-        }
-        .admin-btn.delete { background: #e74c3c; }
+        .is-admin [contenteditable="true"] { outline: 1px dashed #c0392b; padding: 2px; background: rgba(192, 57, 43, 0.05); }
+        .is-admin [contenteditable="true"]:focus { outline: 2px solid #c0392b; background: #fff; }
+        
+        .admin-btn { background: var(--deep-teal); color: var(--ivory); border: none; padding: 8px 12px; cursor: pointer; font-family: var(--font-body); font-size: 0.85rem; margin: 5px 2px; transition: 0.2s; }
+        .admin-btn:hover { opacity: 0.9; }
+        .admin-btn.delete { background: #c0392b; }
+        .admin-btn.small { padding: 4px 8px; font-size: 0.75rem; position: absolute; top: 0; right: 0; }
+        
+        /* Bảng điều khiển Khóa Profile (Admin) */
+        .lock-settings { background: #ffeaa7; padding: 15px; border: 1px solid #fdcb6e; margin-bottom: 20px; }
+        .lock-settings label { font-weight: bold; color: #d35400; }
+        .lock-settings input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #fdcb6e; }
 
-        footer {
-            text-align: center; padding: 40px 20px; font-family: var(--font-heading);
-            color: var(--primary-blue); border-top: 1px solid var(--border-color); margin-top: 40px;
+        /* Hộp Nhạc */
+        .music-player { position: fixed; bottom: 30px; right: 30px; z-index: 999; }
+        .music-btn { width: 60px; height: 60px; border-radius: 50%; background: var(--deep-teal); color: var(--ivory); border: 2px solid var(--warm-beige); cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 1.5rem; transition: transform 0.3s; display: flex; align-items: center; justify-content: center; }
+        .music-btn:hover { transform: scale(1.1); }
+        .music-btn.playing { animation: spin 4s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        #music-notes-container { position: absolute; bottom: 50px; left: 15px; width: 30px; }
+        .floating-note { position: absolute; bottom: 0; color: var(--deep-teal); font-size: 1.2rem; opacity: 0; animation: floatUp 2.5s ease-out forwards; pointer-events: none; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(0.8); opacity: 1; } 50% { opacity: 1; transform: translateY(-60px) scale(1.2) translateX(15px); } 100% { transform: translateY(-120px) scale(1) translateX(-10px); opacity: 0; } }
+
+        footer { text-align: center; padding-top: 40px; font-family: var(--font-heading); color: var(--deep-teal); margin-top: 40px; border-top: 1px solid var(--warm-beige); }
+
+        @media (max-width: 768px) {
+            .letter-container { padding: 20px; }
+            h1 { font-size: 2rem; }
+            .modal-layout { flex-direction: column; }
         }
-        @media (max-width: 768px) { h1 { font-size: 1.8rem; } .modal-header { flex-direction: column; text-align: center; } }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <h1 id="main-title" title="Nhấp đúp để vào chế độ Quản trị">LOVE MAP: TỌA ĐỘ TÌNH YÊU</h1>
-        <p class="subtitle">Thư chào mừng thành viên chính thức • Mùa 1</p>
-        <div class="admin-indicator" id="admin-indicator"><i class="fas fa-unlock-alt"></i> Chế độ Admin đang bật</div>
-        
-        <!-- Bảng điều khiển nhạc Admin -->
-        <div class="admin-only admin-audio-panel">
-            <label for="music-upload"><i class="fas fa-file-audio"></i> Tải lên file nhạc MP3 nền:</label><br>
-            <input type="file" id="music-upload" accept="audio/*">
-            <p class="audio-note">Chọn file nhạc mp3 để phát nhạc nền cho trang web.</p>
-        </div>
-    </header>
-
-    <main class="container">
-        <!-- Thông tin chương trình -->
-        <section class="info-section">
-            <h2 class="section-title"><i class="fas fa-heart"></i> Thông tin chương trình <i class="fas fa-heart"></i></h2>
-            <div id="show-info-container" class="info-grid"></div>
-        </section>
-
-        <!-- Hồ sơ nhân vật -->
-        <section class="cast-section" style="margin-top: 40px;">
-            <h2 class="section-title"><i class="fas fa-users"></i> Hồ sơ người tham gia <i class="fas fa-users"></i></h2>
-            <div id="cast-container" class="cast-grid"></div>
-            <div style="text-align: center;">
-                <button id="add-character-btn" class="admin-only admin-btn"><i class="fas fa-plus"></i> Thêm nhân vật mới</button>
+    <div class="letter-container">
+        <!-- Header -->
+        <header>
+            <h1 id="main-title" title="Nhấp đúp để vào chế độ Quản trị">LOVE MAP: TỌA ĐỘ TÌNH YÊU</h1>
+            <div class="admin-indicator" id="admin-indicator"><i class="fas fa-unlock-alt"></i> Chế độ Admin đang bật</div>
+            
+            <div class="admin-only admin-audio-panel">
+                <label for="music-upload"><strong><i class="fas fa-file-audio"></i> Tải lên nhạc nền (MP3):</strong></label><br>
+                <input type="file" id="music-upload" accept="audio/*" style="margin-top: 10px;">
             </div>
-        </section>
-    </main>
+        </header>
+
+        <main>
+            <!-- Thông tin chương trình (Accordion) -->
+            <section class="info-section">
+                <h2 class="section-title"><i class="fas fa-envelope"></i> Quy chế chương trình <i class="fas fa-envelope"></i></h2>
+                <div id="show-info-container" class="info-grid"></div>
+            </section>
+
+            <!-- Hồ sơ nhân vật (Poster) -->
+            <section class="cast-section">
+                <h2 class="section-title"><i class="fas fa-user-secret"></i> Hồ sơ người tham gia <i class="fas fa-user-secret"></i></h2>
+                <div id="cast-container" class="cast-grid"></div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button id="add-character-btn" class="admin-only admin-btn"><i class="fas fa-plus"></i> Tạo Profile Mới</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>“Không phải mọi cuộc gặp đều là định mệnh.<br>Nhưng mọi định mệnh đều bắt đầu từ một cuộc gặp.”</p>
+            <p style="margin-top: 10px;">— Ban Tổ Chức Love Map —</p>
+        </footer>
+    </div>
 
     <!-- Modal Chi tiết nhân vật -->
     <div id="character-modal" class="modal">
@@ -202,31 +204,25 @@
         </button>
     </div>
 
-    <footer>
-        <p>“Không phải mọi cuộc gặp đều là định mệnh. Nhưng mọi định mệnh đều bắt đầu từ một cuộc gặp.”</p>
-        <p>— Ban Tổ Chức Love Map: Tọa Độ Tình Yêu —</p>
-    </footer>
-
     <script>
-        // --- DỮ LIỆU CHƯƠNG TRÌNH MẶC ĐỊNH ---
+        // --- DỮ LIỆU MẶC ĐỊNH ---
         const defaultData = {
             showInfo: [
-                { title: "Hình thức phát sóng", content: "Toàn bộ quá trình được phát trực tiếp (Livestream) độc quyền trên nền tảng mạng xã hội Meown, kênh “lovemapVN”. Sau khi kết thúc mỗi chặng, chương trình sẽ làm thành 1-2 tập đăng trên kênh này." },
-                { title: "Thời lượng & Lộ trình", content: "15 ngày khám phá 5 tỉnh thành, mỗi tỉnh thành ở lại 3 ngày 2 đêm." },
-                { title: "Người tham gia", content: "Gồm 8 thành viên chính thức (4 nam - 4 nữ) và 4 khách mời (2 nam - 2 nữ, xuất hiện ở chặng 2 và chặng 3)." },
-                { title: "Quy tắc của chương trình", content: "<ul><li>Không kịch bản, không dàn dựng, mọi tương tác, cảm xúc và mâu thuẫn đều diễn ra tự nhiên trước ống kính.</li><li>Khuyến khích tranh luận, bộc lộ cá tính nhưng nghiêm cấm các hành vi thô bạo, gây thương tích cho bất kì ai.</li><li>Không tiết lộ tuổi tác và nghề nghiệp.</li><li>Tất cả mọi người đều bị tịch thu điện thoại và các thiết bị liên lạc ngay khi bước vào show.</li></ul>" },
-                { title: "Đêm Tiết Lộ & Đêm Tiết Lộ Quyền Lực", content: "Cuối mỗi chặng, cặp đôi nào được khán giả xem livestream vote nhiều nhất thì cặp đôi đó sẽ có 14 tiếng ở qua đêm trong 1 căn homestay cao cấp, tại đó họ mới được quyền tiết lộ thông tin cá nhân của mình và sau khi tiết lộ xong thì toàn bộ máy quay sẽ được tắt, họ có quyền tận hưởng không gian riêng tư tuyệt đối không bị giám sát cho đến sáng hôm sau." },
-                { title: "Lịch trình hằng ngày", content: "<ul><li><strong>Sáng (Khởi động & Chia cặp):</strong> Tiến hành thu hồi thiết bị liên lạc (ngày đầu), công bố kết quả vote gán ghép của khán giả trên Meown (ngày hai) hoặc chơi mini-game trí tuệ để giành quyền ưu tiên chỉ định bạn cặp (ngày cuối). Thử thách di chuyển/thể lực để phân cấp phương tiện (Máy bay thương gia vs Xe bus giường nằm) hoặc phân cấp thực đơn (Đại tiệc đặc sản vs Tự kiếm củi nấu cơm).</li><li><strong>Trưa - Chiều (Hoạt động / Thử thách):</strong> Xế chiều chơi mini-game xáo trộn cặp đôi mới. Tham gia Thử thách lớn đặc trưng địa phương hoặc vào phòng phỏng vấn đoán tuổi/nghề nghiệp người mình thích (ngày cuối).</li><li><strong>Tối (Lửa trại, Thư mật & Phân cấp chỗ ngủ):</strong> Quây quần bên lửa trại, chơi game kết nối. Vào phòng phỏng vấn kín viết thư mật (20 phút) gửi người để ý và nhận thư phản hồi. Chơi mini-game chia cặp đêm mới để phân chia chỗ ngủ (Phòng đôi Homestay vs Ngủ lều dã ngoại).</li></ul>" },
-                { title: "Lệnh RP (Commands)", content: "Nhập <code>/batdau</code> để bắt đầu nhập vai. Nhập <code>/thongtin</code> để kiểm tra chỉ số." }
+                { title: "Hình thức phát sóng", content: "Toàn bộ quá trình được phát trực tiếp (Livestream) độc quyền trên mạng xã hội Meown, kênh “lovemapVN”. Sau mỗi chặng làm thành 1-2 tập đăng lại." },
+                { title: "Thời lượng", content: "15 ngày khám phá 5 tỉnh thành, mỗi tỉnh thành ở lại 3 ngày 2 đêm." },
+                { title: "Người tham gia", content: "Gồm 8 thành viên chính thức (4 nam - 4 nữ) và 4 khách mời (2 nam - 2 nữ, xuất hiện chặng 2 và chặng 3)." },
+                { title: "Quy tắc của chương trình", content: "<ul><li>Không kịch bản, không dàn dựng, mọi tương tác diễn ra tự nhiên.</li><li>Nghiêm cấm các hành vi thô bạo, gây thương tích.</li><li>Không tiết lộ tuổi tác và nghề nghiệp (trừ khi vào Đêm Tiết Lộ).</li><li>Bị tịch thu điện thoại và các thiết bị liên lạc.</li></ul>" },
+                { title: "Lịch trình", content: "<ul><li><strong>Sáng:</strong> Chơi mini-game phân cấp phương tiện di chuyển hoặc thực đơn.</li><li><strong>Trưa - Chiều:</strong> Xáo trộn cặp đôi, tham gia thử thách lớn địa phương hoặc phòng phỏng vấn định mệnh.</li><li><strong>Tối:</strong> Lửa trại, viết thư mật (20 phút). Chơi game phân cấp chỗ ngủ.</li><li><strong>Đêm Tiết Lộ:</strong> Cuối chặng, cặp vote cao nhất được 14h ở Homestay riêng tư, tiết lộ thân phận, tắt máy quay.</li></ul>" },
+                { title: "Lệnh RP", content: "Gõ <code>/batdau</code> để tham gia hành trình. Gõ <code>/thongtin</code> để kiểm tra chỉ số tình cảm." }
             ],
-            characters: [], // Để trống hoàn toàn cho Admin tự nhập
+            characters: [], // Để trống cho Admin thêm
             musicData: ""
         };
 
-        // --- QUẢN LÝ TRẠNG THÁI ---
         let appData = JSON.parse(localStorage.getItem('loveMapData')) || defaultData;
         let isAdmin = false;
         const adminPassword = "bhnt2006";
+        let currentOpenModalIndex = null;
 
         // --- HỘP NHẠC ---
         const audioEl = document.getElementById('bg-music');
@@ -235,29 +231,21 @@
         let noteInterval;
         let isPlaying = false;
 
-        if(appData.musicData) { audioEl.src = appData.musicData; }
+        if(appData.musicData) audioEl.src = appData.musicData;
 
         musicBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                audioEl.pause();
-                musicBtn.classList.remove('playing');
-                clearInterval(noteInterval);
-            } else {
-                audioEl.play().catch(() => alert("Admin chưa tải file nhạc nền lên hoặc file chưa sẵn sàng!"));
-                musicBtn.classList.add('playing');
-                spawnNotes();
-            }
+            if (isPlaying) { audioEl.pause(); musicBtn.classList.remove('playing'); clearInterval(noteInterval); } 
+            else { audioEl.play().catch(() => alert("Chưa có nhạc nền!")); musicBtn.classList.add('playing'); spawnNotes(); }
             isPlaying = !isPlaying;
         });
 
         function spawnNotes() {
             noteInterval = setInterval(() => {
                 const note = document.createElement('i');
-                const icons = ['fa-music', 'fa-itunes-note', 'fa-heart'];
-                note.className = `fas ${icons[Math.floor(Math.random() * icons.length)]} floating-note`;
+                note.className = `fas fa-music floating-note`;
                 note.style.left = Math.random() * 20 - 10 + 'px';
                 musicContainer.appendChild(note);
-                setTimeout(() => { note.remove(); }, 2500);
+                setTimeout(() => note.remove(), 2500);
             }, 600);
         }
 
@@ -266,118 +254,202 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    const base64Music = event.target.result;
                     try {
-                        appData.musicData = base64Music;
-                        saveData();
-                        audioEl.src = base64Music;
-                        alert("Tải nhạc nền thành công! Bấm biểu tượng Hộp nhạc để nghe thử.");
-                    } catch(err) {
-                        alert("File nhạc hơi lớn nên chỉ phát tạm thời. Bạn nên chọn file nhẹ hơn để lưu lâu dài nhé!");
-                        audioEl.src = URL.createObjectURL(file);
-                    }
+                        appData.musicData = event.target.result; saveData(); audioEl.src = event.target.result;
+                        alert("Tải nhạc thành công!");
+                    } catch(err) { alert("File quá lớn, chỉ phát tạm thời!"); audioEl.src = URL.createObjectURL(file); }
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // --- RENDER GIAO DIỆN ---
+        // --- RENDER THÔNG TIN CHƯƠNG TRÌNH (ACCORDION) ---
         function renderShowInfo() {
             const container = document.getElementById('show-info-container');
             container.innerHTML = '';
             appData.showInfo.forEach((info, index) => {
-                container.innerHTML += `
-                    <div class="info-item">
-                        <h3 ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateInfo(${index}, 'title', this.innerText)">${info.title}</h3>
-                        <div ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateInfo(${index}, 'content', this.innerHTML)">${info.content}</div>
+                const item = document.createElement('div');
+                item.className = 'accordion-item';
+                
+                const headerHtml = isAdmin 
+                    ? `<div style="flex:1" contenteditable="true" onblur="updateInfo(${index}, 'title', this.innerText)">${info.title}</div>`
+                    : `<span>${info.title}</span>`;
+
+                item.innerHTML = `
+                    <button class="accordion-header" onclick="toggleAccordion(this)">
+                        ${headerHtml}
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="accordion-content">
+                        <div style="padding-top:10px" ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateInfo(${index}, 'content', this.innerHTML)">${info.content}</div>
                     </div>
                 `;
+                container.appendChild(item);
             });
         }
 
+        function toggleAccordion(btn) {
+            // Không cho toggle khi click vào chỗ sửa text của Admin
+            if(event.target.getAttribute('contenteditable') === 'true') return; 
+            btn.classList.toggle('active');
+            const content = btn.nextElementSibling;
+            if (btn.classList.contains('active')) {
+                content.classList.add('active');
+            } else {
+                content.classList.remove('active');
+            }
+        }
+
+        // --- RENDER NHÂN VẬT ---
         function renderCharacters() {
             const container = document.getElementById('cast-container');
             container.innerHTML = '';
-            
             if(appData.characters.length === 0) {
-                container.innerHTML = `<p class="no-cast-msg">${isAdmin ? 'Chưa có nhân vật nào. Bấm "Thêm nhân vật mới" bên dưới để khởi tạo!' : 'Danh sách thành viên đang được cập nhật...'}</p>`;
-                return;
+                container.innerHTML = `<p class="no-cast-msg">Chưa có Profile nào được khởi tạo.</p>`; return;
             }
-
             appData.characters.forEach((char, index) => {
+                const lockHtml = char.isLocked ? `<div class="lock-icon" title="Hồ sơ bị khóa"><i class="fas fa-lock"></i></div>` : '';
                 container.innerHTML += `
-                    <div class="cast-card" onclick="openModal(${index})">
+                    <div class="cast-card" onclick="handleCardClick(${index})">
+                        ${lockHtml}
                         <div class="cast-img-wrapper">
                             <img src="${char.avatar}" alt="${char.name}">
                         </div>
-                        <div class="cast-info">
-                            <div class="cast-name">${char.name}</div>
-                        </div>
+                        <div class="cast-name">${char.name}</div>
                     </div>
                 `;
             });
         }
 
-        // --- MODAL & TƯƠNG TÁC ADMIN ---
+        function handleCardClick(index) {
+            const char = appData.characters[index];
+            if (char.isLocked && !isAdmin) {
+                const answer = prompt(`BẢO MẬT HỒ SƠ:\n${char.lockQuestion}`);
+                if (answer === null) return; // Hủy
+                if (answer.trim().toLowerCase() === char.lockAnswer.trim().toLowerCase()) {
+                    openModal(index);
+                } else {
+                    alert("Sai mật khẩu/câu trả lời. Không thể mở hồ sơ này!");
+                }
+            } else {
+                openModal(index);
+            }
+        }
+
+        // --- MODAL & GALLERY ---
         function openModal(index) {
+            currentOpenModalIndex = index;
             const char = appData.characters[index];
             const modalBody = document.getElementById('modal-body');
             
+            // Xử lý Gallery
+            let galleryImages = '';
+            if(char.gallery && char.gallery.length > 0) {
+                char.gallery.forEach((img, i) => {
+                    galleryImages += `
+                        <div class="gallery-item">
+                            <img src="${img}" onclick="changeMainImg(this.src)">
+                            ${isAdmin ? `<button class="admin-btn small delete" onclick="removeGalleryImg(${index}, ${i})"><i class="fas fa-times"></i></button>` : ''}
+                        </div>`;
+                });
+            }
+
+            // Xử lý Giao diện Admin trong Modal
             let adminControls = isAdmin ? `
-                <br>
-                <button class="admin-btn" onclick="changeAvatar(${index}, event)"><i class="fas fa-image"></i> Đổi Link Ảnh Avatar</button>
-                <button class="admin-btn delete" onclick="deleteCharacter(${index}, event)"><i class="fas fa-trash"></i> Xóa Nhân Vật</button>
+                <div style="margin-top: 10px;">
+                    <button class="admin-btn" onclick="changeAvatar(${index})"><i class="fas fa-portrait"></i> Đổi Ảnh Đại Diện</button>
+                    <button class="admin-btn delete" onclick="deleteCharacter(${index})"><i class="fas fa-trash"></i> Xóa Profile</button>
+                </div>
+                <div class="lock-settings admin-only">
+                    <label><input type="checkbox" id="lock-checkbox" ${char.isLocked ? 'checked' : ''} onchange="updateLock(${index})"> Kích hoạt Khóa Profile</label>
+                    <div id="lock-inputs" style="display: ${char.isLocked ? 'block' : 'none'};">
+                        <label>Câu hỏi mở khóa:</label>
+                        <input type="text" id="lock-question" value="${char.lockQuestion || ''}" onblur="updateLockData(${index})" placeholder="Ví dụ: Ai là người hướng nội nhất?">
+                        <label>Câu trả lời đúng:</label>
+                        <input type="text" id="lock-answer" value="${char.lockAnswer || ''}" onblur="updateLockData(${index})" placeholder="Ví dụ: Ngọc Tuyết">
+                    </div>
+                </div>
             ` : '';
 
             modalBody.innerHTML = `
-                <div class="modal-header">
-                    <img src="${char.avatar}" class="modal-avatar" alt="${char.name}">
-                    <div>
-                        <h2 class="modal-title" ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'name', this.innerText)">${char.name}</h2>
-                        ${adminControls}
+                <div class="modal-layout">
+                    <div class="modal-left">
+                        <img src="${char.avatar}" class="modal-main-img" id="main-modal-img" alt="${char.name}">
+                        <div class="gallery-container">
+                            <div class="gallery-title">Kho ảnh</div>
+                            <div class="gallery-grid">
+                                ${galleryImages}
+                                ${isAdmin ? `<div class="gallery-item" style="display:flex; justify-content:center; align-items:center; border:2px dashed var(--deep-teal);" onclick="addGalleryImg(${index})"><i class="fas fa-plus" style="color:var(--deep-teal)"></i></div>` : ''}
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-details">
-                    <div class="detail-block"><strong>Quê quán:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'hometown', this.innerText)">${char.hometown}</span></div>
-                    <div class="detail-block"><strong>Ngoại hình:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'appearance', this.innerText)">${char.appearance}</span></div>
-                    <div class="detail-block"><strong>Ấn tượng đầu:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'firstImpression', this.innerText)">${char.firstImpression}</span></div>
-                    <div class="detail-block"><strong>Thói quen giao tiếp:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'communication', this.innerText)">${char.communication}</span></div>
-                    <div class="detail-block"><strong>Trong các trò chơi & thử thách:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'behavior', this.innerText)">${char.behavior}</span></div>
+                    <div class="modal-right">
+                        ${adminControls}
+                        <h2 class="modal-title" ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'name', this.innerText)">${char.name}</h2>
+                        
+                        <div class="detail-block"><strong>Quê quán:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'hometown', this.innerText)">${char.hometown}</span></div>
+                        <div class="detail-block"><strong>Ngoại hình:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'appearance', this.innerText)">${char.appearance}</span></div>
+                        <div class="detail-block"><strong>Ấn tượng đầu:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'firstImpression', this.innerText)">${char.firstImpression}</span></div>
+                        <div class="detail-block"><strong>Thói quen giao tiếp:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'communication', this.innerText)">${char.communication}</span></div>
+                        <div class="detail-block"><strong>Trong thử thách:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'behavior', this.innerText)">${char.behavior}</span></div>
+                    </div>
                 </div>
             `;
             document.getElementById('character-modal').style.display = 'block';
         }
 
-        function updateInfo(index, field, value) { appData.showInfo[index][field] = value; saveData(); }
-        function updateChar(index, field, value) { appData.characters[index][field] = value; saveData(); renderCharacters(); }
-
-        function changeAvatar(index, event) {
+        // Logic Gallery & Đổi Ảnh chính
+        function changeMainImg(src) { document.getElementById('main-modal-img').src = src; }
+        
+        function addGalleryImg(index) {
+            const url = prompt("Nhập link ảnh:");
+            if(url) {
+                if(!appData.characters[index].gallery) appData.characters[index].gallery = [];
+                appData.characters[index].gallery.push(url);
+                saveData(); openModal(index);
+            }
+        }
+        function removeGalleryImg(charIndex, imgIndex) {
             event.stopPropagation();
-            const newUrl = prompt("Nhập đường link (URL) ảnh mới cho nhân vật:", appData.characters[index].avatar);
-            if(newUrl) {
-                appData.characters[index].avatar = newUrl;
-                saveData(); renderCharacters(); openModal(index);
+            if(confirm("Xóa ảnh này khỏi kho?")) {
+                appData.characters[charIndex].gallery.splice(imgIndex, 1);
+                saveData(); openModal(charIndex);
             }
         }
 
-        function deleteCharacter(index, event) {
-            event.stopPropagation();
-            if(confirm("Bạn có chắc muốn xóa nhân vật này không?")) {
-                appData.characters.splice(index, 1);
-                saveData(); document.getElementById('character-modal').style.display = 'none'; renderCharacters();
+        // Logic Admin (Khóa, Sửa, Thêm)
+        function updateLock(index) {
+            const isChecked = document.getElementById('lock-checkbox').checked;
+            appData.characters[index].isLocked = isChecked;
+            document.getElementById('lock-inputs').style.display = isChecked ? 'block' : 'none';
+            saveData(); renderCharacters();
+        }
+        function updateLockData(index) {
+            appData.characters[index].lockQuestion = document.getElementById('lock-question').value;
+            appData.characters[index].lockAnswer = document.getElementById('lock-answer').value;
+            saveData();
+        }
+
+        function updateInfo(index, field, value) { appData.showInfo[index][field] = value; saveData(); }
+        function updateChar(index, field, value) { appData.characters[index][field] = value; saveData(); renderCharacters(); }
+
+        function changeAvatar(index) {
+            const newUrl = prompt("Nhập link (URL) ảnh Đại Diện mới:", appData.characters[index].avatar);
+            if(newUrl) { appData.characters[index].avatar = newUrl; saveData(); renderCharacters(); openModal(index); }
+        }
+
+        function deleteCharacter(index) {
+            if(confirm("Bạn có chắc muốn xóa vĩnh viễn Profile này?")) {
+                appData.characters.splice(index, 1); saveData();
+                document.getElementById('character-modal').style.display = 'none'; renderCharacters();
             }
         }
 
         document.getElementById('add-character-btn').addEventListener('click', () => {
             appData.characters.push({
-                id: Date.now(), 
-                name: "Tên Nhân Vật Mới", 
-                avatar: "https://via.placeholder.com/400x533.png?text=LoveMap+Cast",
-                hometown: "Nhập quê quán...", 
-                appearance: "Nhập mô tả ngoại hình...", 
-                firstImpression: "Nhập ấn tượng đầu...", 
-                communication: "Nhập thói quen giao tiếp...", 
-                behavior: "Nhập biểu hiện trong thử thách..."
+                id: Date.now(), name: "Tên Profile", avatar: "https://via.placeholder.com/600x800.png?text=LoveMap",
+                hometown: "...", appearance: "...", firstImpression: "...", communication: "...", behavior: "...",
+                gallery: [], isLocked: false, lockQuestion: "", lockAnswer: ""
             });
             saveData(); renderCharacters();
         });
@@ -388,24 +460,24 @@
         document.querySelector('.close-btn').addEventListener('click', () => { document.getElementById('character-modal').style.display = 'none'; });
         window.onclick = function(event) { if (event.target == document.getElementById('character-modal')) { document.getElementById('character-modal').style.display = 'none'; } }
 
-        // --- KÍCH HOẠT ADMIN MODE (Nhấp đúp tiêu đề) ---
+        // --- KÍCH HOẠT ADMIN MODE ---
         document.getElementById('main-title').addEventListener('dblclick', () => {
             if(!isAdmin) {
-                const pass = prompt("Nhập mật mã Admin:");
+                const pass = prompt("Nhập mã truy cập Quản trị viên:");
                 if (pass === adminPassword) {
-                    isAdmin = true;
-                    document.body.classList.add('is-admin');
-                    alert("Đã bật Chế độ Quản trị!\n\n- Nhấp trực tiếp vào chữ để chỉnh sửa.\n- Bấm 'Thêm nhân vật mới' để tạo nhân vật.\n- Tải nhạc MP3 ở bảng phía trên.");
+                    isAdmin = true; document.body.classList.add('is-admin');
+                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n- Click tiêu đề/nội dung để sửa text.\n- Nhấp vào Profile để cài đặt Khóa bảo mật & thêm ảnh Kho.");
                     renderShowInfo(); renderCharacters();
-                } else if (pass !== null) { alert("Mật khẩu không chính xác!"); }
+                    if(currentOpenModalIndex !== null && document.getElementById('character-modal').style.display === 'block') { openModal(currentOpenModalIndex); }
+                } else if (pass !== null) alert("Mã sai!");
             } else {
-                isAdmin = false;
-                document.body.classList.remove('is-admin');
+                isAdmin = false; document.body.classList.remove('is-admin');
                 renderShowInfo(); renderCharacters();
+                if(currentOpenModalIndex !== null && document.getElementById('character-modal').style.display === 'block') { openModal(currentOpenModalIndex); }
             }
         });
 
-        // Khởi chạy ban đầu
+        // Khởi chạy
         renderShowInfo();
         renderCharacters();
     </script>
