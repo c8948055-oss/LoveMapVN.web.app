@@ -65,7 +65,7 @@
         .accordion-header i { transition: transform 0.3s; }
         .accordion-header.active i { transform: rotate(180deg); }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; background: #fff; padding: 0 20px; }
-        .accordion-content.active { padding: 20px; max-height: 1000px; } /* Mở rộng tối đa */
+        .accordion-content.active { padding: 20px; max-height: 1000px; } 
         .accordion-content ul { padding-left: 20px; }
 
         /* Hồ sơ nhân vật (Poster Style) */
@@ -215,7 +215,7 @@
                 { title: "Lịch trình", content: "<ul><li><strong>Sáng:</strong> Chơi mini-game phân cấp phương tiện di chuyển hoặc thực đơn.</li><li><strong>Trưa - Chiều:</strong> Xáo trộn cặp đôi, tham gia thử thách lớn địa phương hoặc phòng phỏng vấn định mệnh.</li><li><strong>Tối:</strong> Lửa trại, viết thư mật (20 phút). Chơi game phân cấp chỗ ngủ.</li><li><strong>Đêm Tiết Lộ:</strong> Cuối chặng, cặp vote cao nhất được 14h ở Homestay riêng tư, tiết lộ thân phận, tắt máy quay.</li></ul>" },
                 { title: "Lệnh RP", content: "Gõ <code>/batdau</code> để tham gia hành trình. Gõ <code>/thongtin</code> để kiểm tra chỉ số tình cảm." }
             ],
-            characters: [], // Để trống cho Admin thêm
+            characters: [], 
             musicData: ""
         };
 
@@ -289,7 +289,6 @@
         }
 
         function toggleAccordion(btn) {
-            // Không cho toggle khi click vào chỗ sửa text của Admin
             if(event.target.getAttribute('contenteditable') === 'true') return; 
             btn.classList.toggle('active');
             const content = btn.nextElementSibling;
@@ -324,12 +323,12 @@
         function handleCardClick(index) {
             const char = appData.characters[index];
             if (char.isLocked && !isAdmin) {
-                const answer = prompt(`BẢO MẬT HỒ SƠ:\n${char.lockQuestion}`);
-                if (answer === null) return; // Hủy
-                if (answer.trim().toLowerCase() === char.lockAnswer.trim().toLowerCase()) {
+                const answer = prompt(`BẢO MẬT HỒ SƠ:\n${char.lockQuestion}\n\n(Vui lòng nhập câu trả lời để mở khóa)`);
+                if (answer === null) return; // Nhấn Cancel
+                if (answer.trim() !== "") { // Chỉ cần có nhập dữ liệu là mở
                     openModal(index);
                 } else {
-                    alert("Sai mật khẩu/câu trả lời. Không thể mở hồ sơ này!");
+                    alert("Bạn chưa nhập câu trả lời. Không thể mở hồ sơ này!");
                 }
             } else {
                 openModal(index);
@@ -354,19 +353,17 @@
                 });
             }
 
-            // Xử lý Giao diện Admin trong Modal
+            // Xử lý Giao diện Admin
             let adminControls = isAdmin ? `
                 <div style="margin-top: 10px;">
-                    <button class="admin-btn" onclick="changeAvatar(${index})"><i class="fas fa-portrait"></i> Đổi Ảnh Đại Diện</button>
+                    <button class="admin-btn" onclick="changeAvatar(${index})"><i class="fas fa-portrait"></i> Đổi Ảnh Đại Diện (File)</button>
                     <button class="admin-btn delete" onclick="deleteCharacter(${index})"><i class="fas fa-trash"></i> Xóa Profile</button>
                 </div>
                 <div class="lock-settings admin-only">
                     <label><input type="checkbox" id="lock-checkbox" ${char.isLocked ? 'checked' : ''} onchange="updateLock(${index})"> Kích hoạt Khóa Profile</label>
                     <div id="lock-inputs" style="display: ${char.isLocked ? 'block' : 'none'};">
-                        <label>Câu hỏi mở khóa:</label>
+                        <label>Câu hỏi mở khóa (Chỉ cần người dùng nhập câu trả lời là sẽ mở):</label>
                         <input type="text" id="lock-question" value="${char.lockQuestion || ''}" onblur="updateLockData(${index})" placeholder="Ví dụ: Ai là người hướng nội nhất?">
-                        <label>Câu trả lời đúng:</label>
-                        <input type="text" id="lock-answer" value="${char.lockAnswer || ''}" onblur="updateLockData(${index})" placeholder="Ví dụ: Ngọc Tuyết">
                     </div>
                 </div>
             ` : '';
@@ -401,14 +398,38 @@
         // Logic Gallery & Đổi Ảnh chính
         function changeMainImg(src) { document.getElementById('main-modal-img').src = src; }
         
-        function addGalleryImg(index) {
-            const url = prompt("Nhập link ảnh:");
-            if(url) {
-                if(!appData.characters[index].gallery) appData.characters[index].gallery = [];
-                appData.characters[index].gallery.push(url);
-                saveData(); openModal(index);
-            }
+        // --- XỬ LÝ UPLOAD ẢNH BẰNG FILE TRỰC TIẾP ---
+        function triggerImageUpload(callback) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    callback(event.target.result); // Chuỗi Base64
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
         }
+
+        function changeAvatar(index) {
+            triggerImageUpload((base64Image) => {
+                appData.characters[index].avatar = base64Image;
+                saveData(); renderCharacters(); openModal(index);
+            });
+        }
+
+        function addGalleryImg(index) {
+            triggerImageUpload((base64Image) => {
+                if(!appData.characters[index].gallery) appData.characters[index].gallery = [];
+                appData.characters[index].gallery.push(base64Image);
+                saveData(); openModal(index);
+            });
+        }
+
         function removeGalleryImg(charIndex, imgIndex) {
             event.stopPropagation();
             if(confirm("Xóa ảnh này khỏi kho?")) {
@@ -426,17 +447,11 @@
         }
         function updateLockData(index) {
             appData.characters[index].lockQuestion = document.getElementById('lock-question').value;
-            appData.characters[index].lockAnswer = document.getElementById('lock-answer').value;
             saveData();
         }
 
         function updateInfo(index, field, value) { appData.showInfo[index][field] = value; saveData(); }
         function updateChar(index, field, value) { appData.characters[index][field] = value; saveData(); renderCharacters(); }
-
-        function changeAvatar(index) {
-            const newUrl = prompt("Nhập link (URL) ảnh Đại Diện mới:", appData.characters[index].avatar);
-            if(newUrl) { appData.characters[index].avatar = newUrl; saveData(); renderCharacters(); openModal(index); }
-        }
 
         function deleteCharacter(index) {
             if(confirm("Bạn có chắc muốn xóa vĩnh viễn Profile này?")) {
@@ -447,9 +462,9 @@
 
         document.getElementById('add-character-btn').addEventListener('click', () => {
             appData.characters.push({
-                id: Date.now(), name: "Tên Profile", avatar: "https://via.placeholder.com/600x800.png?text=LoveMap",
+                id: Date.now(), name: "Tên Profile Mới", avatar: "https://via.placeholder.com/600x800.png?text=LoveMap+Avatar",
                 hometown: "...", appearance: "...", firstImpression: "...", communication: "...", behavior: "...",
-                gallery: [], isLocked: false, lockQuestion: "", lockAnswer: ""
+                gallery: [], isLocked: false, lockQuestion: ""
             });
             saveData(); renderCharacters();
         });
@@ -466,7 +481,7 @@
                 const pass = prompt("Nhập mã truy cập Quản trị viên:");
                 if (pass === adminPassword) {
                     isAdmin = true; document.body.classList.add('is-admin');
-                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n- Click tiêu đề/nội dung để sửa text.\n- Nhấp vào Profile để cài đặt Khóa bảo mật & thêm ảnh Kho.");
+                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n- Các tính năng Upload File, Chỉnh sửa, Khóa Profile đã sẵn sàng.");
                     renderShowInfo(); renderCharacters();
                     if(currentOpenModalIndex !== null && document.getElementById('character-modal').style.display === 'block') { openModal(currentOpenModalIndex); }
                 } else if (pass !== null) alert("Mã sai!");
