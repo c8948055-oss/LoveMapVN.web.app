@@ -50,7 +50,7 @@
         .accordion-content.active { padding: 20px; max-height: 1000px; } 
         .accordion-content ul { padding-left: 20px; }
 
-        /* Hồ sơ nhân vật (Trang chủ) */
+        /* Hồ sơ nhân vật */
         .cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; margin-bottom: 30px; }
         .cast-card { background: #fff; padding: 15px; border: 1px solid var(--warm-beige); box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s ease; position: relative; text-align: center; }
         .cast-card:hover { transform: translateY(-10px) rotate(2deg); box-shadow: 0 15px 25px rgba(15, 94, 104, 0.2); }
@@ -70,14 +70,9 @@
         
         /* Ảnh chính phóng to đúng tỷ lệ gốc */
         .modal-main-img { 
-            width: 100%; 
-            height: auto; 
-            max-height: 65vh; 
-            object-fit: contain; 
-            border: 4px solid #fff; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            background: #fff;
-            border-radius: 4px;
+            width: 100%; height: auto; max-height: 65vh; object-fit: contain; 
+            border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            background: #fff; border-radius: 4px;
         }
         
         .modal-title { font-family: var(--font-heading); color: var(--deep-teal); font-size: 2.5rem; margin-bottom: 20px; border-bottom: 2px solid var(--warm-beige); padding-bottom: 10px; }
@@ -99,9 +94,7 @@
             height: 100px; width: auto; flex-shrink: 0; cursor: pointer; border: 2px solid transparent;
             transition: 0.2s; position: relative; background: #fff;
         }
-        .gallery-item img {
-            height: 100%; width: auto; max-width: 250px; object-fit: contain; display: block;
-        }
+        .gallery-item img { height: 100%; width: auto; max-width: 250px; object-fit: contain; display: block; }
         .gallery-item:hover { border-color: var(--deep-teal); }
         
         .gallery-add-btn {
@@ -143,12 +136,18 @@
         /* Loading Overlay */
         #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; color: white; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5rem; }
         .spinner { border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid #fff; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+
+        /* Bảng Playlist Admin */
+        #playlist-admin-container { margin-top: 15px; text-align: left; font-size: 0.9rem; background: var(--ivory); padding: 10px; border-radius: 4px; }
+        .playlist-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--warm-beige); padding: 5px 0; }
+        .playlist-item:last-child { border-bottom: none; }
+        .song-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%; color: var(--deep-teal); font-weight: 500;}
     </style>
 </head>
 <body>
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p>Đang xử lý ảnh, vui lòng đợi...</p>
+        <p id="loading-text">Đang xử lý, vui lòng đợi...</p>
     </div>
 
     <!-- Input file ẩn -->
@@ -161,8 +160,9 @@
             <div class="admin-indicator" id="admin-indicator"><i class="fas fa-unlock-alt"></i> Chế độ Admin đang bật</div>
             
             <div class="admin-only admin-audio-panel">
-                <label for="music-upload"><strong><i class="fas fa-file-audio"></i> Tải lên nhạc nền (MP3):</strong></label><br>
-                <input type="file" id="music-upload" accept="audio/*" style="margin-top: 10px;">
+                <label for="music-upload"><strong><i class="fas fa-file-audio"></i> Quản lý Nhạc nền (Tải nhiều bài cùng lúc):</strong></label><br>
+                <input type="file" id="music-upload" accept="audio/*" multiple style="margin-top: 10px;">
+                <div id="playlist-admin-container"></div>
             </div>
         </header>
 
@@ -195,8 +195,8 @@
         </div>
     </div>
 
-    <!-- Hộp nhạc -->
-    <audio id="bg-music" loop></audio>
+    <!-- Hộp nhạc Player -->
+    <audio id="bg-music"></audio>
     <div id="music-player" class="music-player">
         <div id="music-notes-container"></div>
         <button id="music-toggle" class="music-btn" title="Phát/Tắt nhạc">
@@ -216,7 +216,7 @@
                 { title: "Lệnh RP", content: "Gõ <code>/batdau</code> để tham gia hành trình. Gõ <code>/thongtin</code> để kiểm tra chỉ số tình cảm." }
             ],
             characters: [], 
-            musicData: ""
+            playlist: [] // Chuyển từ musicData (1 bài) sang playlist (Nhiều bài)
         };
 
         let appData = defaultData;
@@ -227,7 +227,16 @@
 
         // Khởi tạo DB
         localforage.getItem('loveMapData').then(function(value) {
-            if (value) { appData = value; }
+            if (value) {
+                appData = value;
+                // Migrate dữ liệu cũ nếu người dùng đã lưu bằng biến musicData
+                if(appData.musicData && (!appData.playlist || appData.playlist.length === 0)) {
+                    appData.playlist = [{ name: "Nhạc nền hiện tại", data: appData.musicData }];
+                    delete appData.musicData;
+                    saveData();
+                }
+                if(!appData.playlist) appData.playlist = [];
+            }
             initApp();
         }).catch(function(err) {
             console.log("Lỗi load dữ liệu:", err);
@@ -239,45 +248,140 @@
         function initApp() {
             renderShowInfo();
             renderCharacters();
-            if(appData.musicData) audioEl.src = appData.musicData;
+            if(appData.playlist.length > 0) {
+                audioEl.src = appData.playlist[0].data;
+            }
         }
 
-        // Hộp nhạc
+        // --- HỘP NHẠC (PLAYLIST) ---
         const audioEl = document.getElementById('bg-music');
         const musicBtn = document.getElementById('music-toggle');
         const musicContainer = document.getElementById('music-notes-container');
         let noteInterval;
         let isPlaying = false;
+        let currentSongIndex = 0;
+
+        function playSong(index) {
+            if(appData.playlist.length === 0) return;
+            if(index >= appData.playlist.length) index = 0;
+            currentSongIndex = index;
+            audioEl.src = appData.playlist[currentSongIndex].data;
+            audioEl.play().catch(e => console.log("Trình duyệt chặn autoplay", e));
+        }
+
+        // Tự động nhảy bài khi hết bài
+        audioEl.addEventListener('ended', () => {
+            playSong(currentSongIndex + 1);
+        });
 
         musicBtn.addEventListener('click', () => {
-            if (isPlaying) { audioEl.pause(); musicBtn.classList.remove('playing'); clearInterval(noteInterval); } 
-            else { audioEl.play().catch(() => alert("Chưa có nhạc nền!")); musicBtn.classList.add('playing'); spawnNotes(); }
-            isPlaying = !isPlaying;
+            if (isPlaying) { 
+                audioEl.pause(); 
+                musicBtn.classList.remove('playing'); 
+                clearInterval(noteInterval); 
+                isPlaying = false;
+            } else { 
+                if (appData.playlist && appData.playlist.length > 0) {
+                    if (!audioEl.src || audioEl.ended) {
+                        playSong(currentSongIndex);
+                    } else {
+                        audioEl.play().catch(() => alert("Lỗi phát nhạc!"));
+                    }
+                    musicBtn.classList.add('playing'); 
+                    spawnNotes(); 
+                    isPlaying = true;
+                } else {
+                    alert("Chưa có nhạc nền! Xin vui lòng tải nhạc lên.");
+                }
+            }
         });
 
         function spawnNotes() {
+            // Đa dạng hóa các icon lơ lửng
+            const icons = ['fa-music', 'fa-itunes-note', 'fa-heart', 'fa-star', 'fa-compact-disc'];
             noteInterval = setInterval(() => {
                 const note = document.createElement('i');
-                note.className = `fas fa-music floating-note`;
+                const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+                note.className = `fas ${randomIcon} floating-note`;
                 note.style.left = Math.random() * 20 - 10 + 'px';
                 musicContainer.appendChild(note);
                 setTimeout(() => note.remove(), 2500);
             }, 600);
         }
 
+        // TẢI & QUẢN LÝ NHẠC CHO ADMIN
         document.getElementById('music-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+            
+            const loadingOverlay = document.getElementById('loading-overlay');
+            document.getElementById('loading-text').innerText = "Đang xử lý âm thanh, vui lòng đợi...";
+            loadingOverlay.style.display = 'flex'; 
+
+            if(!appData.playlist) appData.playlist = [];
+            let loadedCount = 0;
+            
+            for (let i = 0; i < files.length; i++) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    appData.musicData = event.target.result; 
-                    saveData(); 
-                    audioEl.src = event.target.result;
-                    alert("Tải nhạc thành công!");
+                    appData.playlist.push({
+                        name: files[i].name,
+                        data: event.target.result
+                    });
+                    loadedCount++;
+                    
+                    if (loadedCount === files.length) {
+                        saveData(); 
+                        renderPlaylistAdmin();
+                        if (appData.playlist.length === files.length) {
+                            // Nếu đây là lần tải đầu tiên, gán bài 1 vào player
+                            audioEl.src = appData.playlist[0].data;
+                        }
+                        loadingOverlay.style.display = 'none';
+                        alert("Tải danh sách nhạc thành công!");
+                    }
                 };
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(files[i]);
             }
         });
+
+        function renderPlaylistAdmin() {
+            const container = document.getElementById('playlist-admin-container');
+            container.innerHTML = '<strong>Danh sách bài hát:</strong><br>';
+            if(!appData.playlist || appData.playlist.length === 0) {
+                container.innerHTML += '<em>Chưa có bài hát nào trong danh sách.</em>';
+                return;
+            }
+            appData.playlist.forEach((song, index) => {
+                container.innerHTML += `
+                    <div class="playlist-item">
+                        <span class="song-name"><i class="fas fa-music"></i> ${song.name}</span>
+                        <button class="admin-btn delete small" style="position: static;" onclick="deleteSong(${index})"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function deleteSong(index) {
+            if(confirm("Xóa bài hát này khỏi Playlist?")) {
+                appData.playlist.splice(index, 1);
+                saveData();
+                renderPlaylistAdmin();
+                // Reset nhạc nếu đang xóa bài hát đang phát
+                if(currentSongIndex === index) {
+                    audioEl.pause();
+                    musicBtn.classList.remove('playing');
+                    clearInterval(noteInterval);
+                    isPlaying = false;
+                    if(appData.playlist.length > 0) {
+                        audioEl.src = appData.playlist[0].data;
+                        currentSongIndex = 0;
+                    } else {
+                        audioEl.src = "";
+                    }
+                }
+            }
+        }
 
         // Tải Ảnh Upload
         function triggerGlobalImageUpload(type, index) {
@@ -293,6 +397,7 @@
             const files = e.target.files;
             if (!files || files.length === 0) return;
             const loadingOverlay = document.getElementById('loading-overlay');
+            document.getElementById('loading-text').innerText = "Đang xử lý ảnh, vui lòng đợi...";
             loadingOverlay.style.display = 'flex'; 
 
             if (currentUploadTarget.type === 'avatar') {
@@ -322,7 +427,7 @@
             }
         });
 
-        // LƯU Ý KỸ THUẬT: Sử dụng 'oninput' thay cho 'onblur' để đảm bảo tính năng Lưu Tức Thời (Real-time Save) hoạt động!
+        // Render Show Info
         function renderShowInfo() {
             const container = document.getElementById('show-info-container');
             container.innerHTML = '';
@@ -396,7 +501,6 @@
                 });
             }
 
-            // Sử dụng sự kiện 'oninput' để Lưu Tức Thời khi Admin gõ chữ
             let adminControls = isAdmin ? `
                 <div style="margin-top: 10px; margin-bottom: 20px;">
                     <button class="admin-btn" onclick="triggerGlobalImageUpload('avatar', ${index})"><i class="fas fa-portrait"></i> Tải Ảnh Đại Diện</button>
@@ -458,8 +562,6 @@
         }
         function updateLockData(index) { appData.characters[index].lockQuestion = document.getElementById('lock-question').value; saveData(); }
         function updateInfo(index, field, value) { appData.showInfo[index][field] = value; saveData(); }
-        
-        // Render characters ở background, không đè modal (Tạo hiệu ứng gõ đến đâu, card cập nhật đến đó)
         function updateChar(index, field, value) { appData.characters[index][field] = value; saveData(); renderCharacters(); }
         
         function deleteCharacter(index) {
@@ -486,8 +588,8 @@
                 const pass = prompt("Nhập mã truy cập Quản trị viên:");
                 if (pass === adminPassword) {
                     isAdmin = true; document.body.classList.add('is-admin');
-                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n\nTất cả dữ liệu bạn gõ giờ đây sẽ được LƯU TỰ ĐỘNG TỨC THỜI. Gõ xong là có thể yên tâm thoát trang nhé!");
-                    renderShowInfo(); renderCharacters();
+                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n\nGiờ đây bạn có thể tải lên toàn bộ Playlist (Nhiều file MP3 cùng lúc).");
+                    renderShowInfo(); renderCharacters(); renderPlaylistAdmin();
                     if(currentOpenModalIndex !== null && document.getElementById('character-modal').style.display === 'block') { openModal(currentOpenModalIndex); }
                 } else if (pass !== null) alert("Mã sai!");
             } else {
