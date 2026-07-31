@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Love Map: Tọa Độ Tình Yêu</title>
     
-    <!-- THẺ NÀY ĐỂ THAY ĐỔI ICON TRÁI ĐẤT THÀNH LOGO CỦA BẠN -->
     <link rel="icon" type="image/png" href="./logo.png">
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Thư viện localForage (IndexedDB) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     
     <style>
         :root {
@@ -24,46 +26,23 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: var(--font-body);
-            background-color: var(--warm-beige);
-            color: var(--text-dark);
-            line-height: 1.6;
-            padding: 20px;
-        }
+        body { font-family: var(--font-body); background-color: var(--warm-beige); color: var(--text-dark); line-height: 1.6; padding: 20px; }
 
         /* Khung lá thư chính */
-        .letter-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background-color: var(--ivory);
-            padding: 40px 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid #c9c1b9;
-            position: relative;
-        }
-        
-        .letter-container::before, .letter-container::after {
-            content: ''; position: absolute; width: 40px; height: 40px; border: 2px solid var(--deep-teal);
-        }
+        .letter-container { max-width: 1000px; margin: 0 auto; background-color: var(--ivory); padding: 40px 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #c9c1b9; position: relative; }
+        .letter-container::before, .letter-container::after { content: ''; position: absolute; width: 40px; height: 40px; border: 2px solid var(--deep-teal); }
         .letter-container::before { top: 20px; left: 20px; border-right: none; border-bottom: none; }
         .letter-container::after { bottom: 20px; right: 20px; border-left: none; border-top: none; }
 
-        /* Header */
         header { text-align: center; padding-bottom: 30px; border-bottom: 2px dashed var(--warm-beige); margin-bottom: 40px; position: relative; }
         h1 { font-family: var(--font-heading); color: var(--deep-teal); font-size: 2.8rem; letter-spacing: 2px; cursor: pointer; user-select: none; }
-
         .section-title { font-family: var(--font-heading); text-align: center; color: var(--deep-teal); font-size: 2rem; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 15px; }
         .section-title i { font-size: 1.2rem; color: var(--warm-beige); }
 
         /* Accordion */
         .info-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 50px; }
         .accordion-item { border: 1px solid var(--warm-beige); background: #fff; }
-        .accordion-header {
-            width: 100%; text-align: left; padding: 15px 20px; background: var(--ivory); border: none;
-            color: var(--deep-teal); font-family: var(--font-heading); font-size: 1.2rem; font-weight: bold;
-            cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s;
-        }
+        .accordion-header { width: 100%; text-align: left; padding: 15px 20px; background: var(--ivory); border: none; color: var(--deep-teal); font-family: var(--font-heading); font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
         .accordion-header:hover { background: var(--warm-beige); }
         .accordion-header i { transition: transform 0.3s; }
         .accordion-header.active i { transform: rotate(180deg); }
@@ -71,64 +50,80 @@
         .accordion-content.active { padding: 20px; max-height: 1000px; } 
         .accordion-content ul { padding-left: 20px; }
 
-        /* Hồ sơ nhân vật */
+        /* Hồ sơ nhân vật (Trang chủ) */
         .cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; margin-bottom: 30px; }
-        .cast-card {
-            background: #fff; padding: 15px; border: 1px solid var(--warm-beige);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s ease;
-            position: relative; text-align: center;
-        }
+        .cast-card { background: #fff; padding: 15px; border: 1px solid var(--warm-beige); box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s ease; position: relative; text-align: center; }
         .cast-card:hover { transform: translateY(-10px) rotate(2deg); box-shadow: 0 15px 25px rgba(15, 94, 104, 0.2); }
         .cast-img-wrapper { width: 100%; aspect-ratio: 3/4; overflow: hidden; border: 1px solid var(--warm-beige); margin-bottom: 15px; position: relative; }
         .cast-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .cast-name { font-family: var(--font-heading); color: var(--deep-teal); font-size: 1.5rem; font-weight: bold; }
-        
         .lock-icon { position: absolute; top: 10px; right: 10px; background: rgba(15, 94, 104, 0.9); color: var(--ivory); width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 1rem; z-index: 10; }
         .no-cast-msg { text-align: center; color: #888; font-style: italic; width: 100%; grid-column: 1/-1; padding: 20px; }
 
         /* Modal Chi tiết nhân vật */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(29, 51, 54, 0.8); backdrop-filter: blur(5px); }
-        .modal-content {
-            background-color: var(--ivory); margin: 3% auto; padding: 40px; border: 2px solid var(--deep-teal);
-            width: 95%; max-width: 900px; position: relative; max-height: 90vh; overflow-y: auto;
-        }
+        .modal-content { background-color: var(--ivory); margin: 3% auto; padding: 40px; border: 2px solid var(--deep-teal); width: 95%; max-width: 1000px; position: relative; max-height: 90vh; overflow-y: auto; }
         .close-btn { position: absolute; right: 25px; top: 20px; color: var(--deep-teal); font-size: 30px; font-weight: bold; cursor: pointer; }
+        .modal-layout { display: flex; gap: 40px; flex-wrap: wrap; }
+        .modal-left { flex: 1.2; min-width: 320px; display: flex; flex-direction: column; }
+        .modal-right { flex: 1; min-width: 300px; }
         
-        .modal-layout { display: flex; gap: 30px; flex-wrap: wrap; }
-        .modal-left { flex: 1; min-width: 300px; }
-        .modal-right { flex: 2; min-width: 300px; }
+        /* Ảnh chính phóng to đúng tỷ lệ gốc */
+        .modal-main-img { 
+            width: 100%; 
+            height: auto; 
+            max-height: 65vh; 
+            object-fit: contain; 
+            border: 4px solid #fff; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            background: #fff;
+            border-radius: 4px;
+        }
         
-        .modal-main-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .modal-title { font-family: var(--font-heading); color: var(--deep-teal); font-size: 2.5rem; margin-bottom: 20px; border-bottom: 2px solid var(--warm-beige); padding-bottom: 10px; }
-        
         .detail-block { margin-bottom: 15px; }
         .detail-block strong { color: var(--deep-teal); font-family: var(--font-heading); font-size: 1.1rem; }
 
-        /* Kho ảnh (Gallery) */
-        .gallery-container { margin-top: 20px; }
+        /* Kho ảnh lướt ngang */
+        .gallery-container { margin-top: 20px; width: 100%; }
         .gallery-title { font-family: var(--font-heading); color: var(--deep-teal); margin-bottom: 10px; font-size: 1.3rem; }
-        .gallery-grid { display: flex; gap: 10px; flex-wrap: wrap; }
-        .gallery-item { width: 80px; height: 80px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; position: relative; }
-        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+        .gallery-scroll-wrapper {
+            display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; flex-wrap: nowrap;
+            align-items: stretch; scrollbar-width: thin; scrollbar-color: var(--deep-teal) var(--warm-beige);
+        }
+        .gallery-scroll-wrapper::-webkit-scrollbar { height: 8px; }
+        .gallery-scroll-wrapper::-webkit-scrollbar-track { background: var(--warm-beige); border-radius: 4px; }
+        .gallery-scroll-wrapper::-webkit-scrollbar-thumb { background: var(--deep-teal); border-radius: 4px; }
+        
+        .gallery-item {
+            height: 100px; width: auto; flex-shrink: 0; cursor: pointer; border: 2px solid transparent;
+            transition: 0.2s; position: relative; background: #fff;
+        }
+        .gallery-item img {
+            height: 100%; width: auto; max-width: 250px; object-fit: contain; display: block;
+        }
         .gallery-item:hover { border-color: var(--deep-teal); }
+        
+        .gallery-add-btn {
+            height: 100px; width: 100px; flex-shrink: 0; display: flex; justify-content: center;
+            align-items: center; border: 2px dashed var(--deep-teal); cursor: pointer; font-size: 1.5rem;
+            color: var(--deep-teal); background: rgba(15, 94, 104, 0.05); transition: 0.2s;
+        }
+        .gallery-add-btn:hover { background: rgba(15, 94, 104, 0.1); }
 
         /* Admin Styles */
         .admin-indicator { display: none; background: #c0392b; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; position: absolute; top: 0px; right: 0px; }
         .is-admin .admin-indicator { display: block; }
         .admin-only { display: none !important; }
         .is-admin .admin-only { display: inline-block !important; }
-
         .admin-audio-panel { background: #fff; border: 1px dashed var(--deep-teal); padding: 15px; margin: 20px auto 0; max-width: 500px; text-align: center; }
         .is-admin .admin-audio-panel { display: block !important; }
-
         .is-admin [contenteditable="true"] { outline: 1px dashed #c0392b; padding: 2px; background: rgba(192, 57, 43, 0.05); }
         .is-admin [contenteditable="true"]:focus { outline: 2px solid #c0392b; background: #fff; }
-        
         .admin-btn { background: var(--deep-teal); color: var(--ivory); border: none; padding: 8px 12px; cursor: pointer; font-family: var(--font-body); font-size: 0.85rem; margin: 5px 2px; transition: 0.2s; }
         .admin-btn:hover { opacity: 0.9; }
         .admin-btn.delete { background: #c0392b; }
-        .admin-btn.small { padding: 4px 8px; font-size: 0.75rem; position: absolute; top: 0; right: 0; }
-        
+        .admin-btn.small { padding: 4px 8px; font-size: 0.75rem; position: absolute; top: 0; right: 0; z-index: 10; background: rgba(192, 57, 43, 0.9); }
         .lock-settings { background: #ffeaa7; padding: 15px; border: 1px solid #fdcb6e; margin-bottom: 20px; }
         .lock-settings label { font-weight: bold; color: #d35400; }
         .lock-settings input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #fdcb6e; }
@@ -142,18 +137,21 @@
         #music-notes-container { position: absolute; bottom: 50px; left: 15px; width: 30px; }
         .floating-note { position: absolute; bottom: 0; color: var(--deep-teal); font-size: 1.2rem; opacity: 0; animation: floatUp 2.5s ease-out forwards; pointer-events: none; }
         @keyframes floatUp { 0% { transform: translateY(0) scale(0.8); opacity: 1; } 50% { opacity: 1; transform: translateY(-60px) scale(1.2) translateX(15px); } 100% { transform: translateY(-120px) scale(1) translateX(-10px); opacity: 0; } }
-
         footer { text-align: center; padding-top: 40px; font-family: var(--font-heading); color: var(--deep-teal); margin-top: 40px; border-top: 1px solid var(--warm-beige); }
-
-        @media (max-width: 768px) {
-            .letter-container { padding: 20px; }
-            h1 { font-size: 2rem; }
-            .modal-layout { flex-direction: column; }
-        }
+        @media (max-width: 768px) { .letter-container { padding: 20px; } h1 { font-size: 2rem; } .modal-layout { flex-direction: column; } }
+        
+        /* Loading Overlay */
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; color: white; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5rem; }
+        .spinner { border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid #fff; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
     </style>
 </head>
 <body>
-    <!-- THẺ INPUT ẨN ĐỂ XỬ LÝ UPLOAD ẢNH (Tuyệt đối không dùng Link nữa) -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>Đang xử lý ảnh, vui lòng đợi...</p>
+    </div>
+
+    <!-- Input file ẩn -->
     <input type="file" id="global-image-upload" accept="image/*" style="display: none;">
 
     <div class="letter-container">
@@ -169,13 +167,11 @@
         </header>
 
         <main>
-            <!-- Thông tin chương trình -->
             <section class="info-section">
-                <h2 class="section-title"><i class="fas fa-envelope"></i> Quy chế chương trình <i class="fas fa-envelope"></i></h2>
+                <h2 class="section-title"><i class="fas fa-envelope"></i> Thông tin chương trình <i class="fas fa-envelope"></i></h2>
                 <div id="show-info-container" class="info-grid"></div>
             </section>
 
-            <!-- Hồ sơ nhân vật -->
             <section class="cast-section">
                 <h2 class="section-title"><i class="fas fa-user-secret"></i> Hồ sơ người tham gia <i class="fas fa-user-secret"></i></h2>
                 <div id="cast-container" class="cast-grid"></div>
@@ -209,7 +205,7 @@
     </div>
 
     <script>
-        // --- DỮ LIỆU MẶC ĐỊNH ---
+        // --- CẤU HÌNH DỮ LIỆU ---
         const defaultData = {
             showInfo: [
                 { title: "Hình thức phát sóng", content: "Toàn bộ quá trình được phát trực tiếp (Livestream) độc quyền trên mạng xã hội Meown, kênh “lovemapVN”. Sau mỗi chặng làm thành 1-2 tập đăng lại." },
@@ -223,20 +219,35 @@
             musicData: ""
         };
 
-        let appData = JSON.parse(localStorage.getItem('loveMapData')) || defaultData;
+        let appData = defaultData;
         let isAdmin = false;
         const adminPassword = "bhnt2006";
         let currentOpenModalIndex = null;
-        let currentUploadTarget = null; // Biến lưu trữ hành động upload ảnh hiện tại
+        let currentUploadTarget = null; 
 
-        // --- HỘP NHẠC ---
+        // Khởi tạo DB
+        localforage.getItem('loveMapData').then(function(value) {
+            if (value) { appData = value; }
+            initApp();
+        }).catch(function(err) {
+            console.log("Lỗi load dữ liệu:", err);
+            initApp();
+        });
+
+        function saveData() { localforage.setItem('loveMapData', appData).catch(function (err) { alert("Lỗi lưu trữ: " + err); }); }
+
+        function initApp() {
+            renderShowInfo();
+            renderCharacters();
+            if(appData.musicData) audioEl.src = appData.musicData;
+        }
+
+        // Hộp nhạc
         const audioEl = document.getElementById('bg-music');
         const musicBtn = document.getElementById('music-toggle');
         const musicContainer = document.getElementById('music-notes-container');
         let noteInterval;
         let isPlaying = false;
-
-        if(appData.musicData) audioEl.src = appData.musicData;
 
         musicBtn.addEventListener('click', () => {
             if (isPlaying) { audioEl.pause(); musicBtn.classList.remove('playing'); clearInterval(noteInterval); } 
@@ -259,65 +270,73 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    try {
-                        appData.musicData = event.target.result; saveData(); audioEl.src = event.target.result;
-                        alert("Tải nhạc thành công!");
-                    } catch(err) { alert("File quá lớn, chỉ phát tạm thời!"); audioEl.src = URL.createObjectURL(file); }
+                    appData.musicData = event.target.result; 
+                    saveData(); 
+                    audioEl.src = event.target.result;
+                    alert("Tải nhạc thành công!");
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // --- XỬ LÝ UPLOAD ẢNH CỐ ĐỊNH CHUẨN HTML ---
-        document.getElementById('global-image-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const base64Image = event.target.result;
-                if (currentUploadTarget) {
-                    try {
-                        if (currentUploadTarget.type === 'avatar') {
-                            appData.characters[currentUploadTarget.index].avatar = base64Image;
-                        } else if (currentUploadTarget.type === 'gallery') {
-                            if (!appData.characters[currentUploadTarget.index].gallery) {
-                                appData.characters[currentUploadTarget.index].gallery = [];
-                            }
-                            appData.characters[currentUploadTarget.index].gallery.push(base64Image);
-                        }
-                        saveData();
-                        openModal(currentUploadTarget.index);
-                        renderCharacters();
-                    } catch(err) {
-                        alert("Lỗi: File ảnh quá lớn so với bộ nhớ trình duyệt (Giới hạn ~5MB). Vui lòng chọn ảnh nhẹ hơn hoặc nén lại trước khi tải lên!");
-                    }
-                }
-            };
-            reader.readAsDataURL(file);
-        });
-
+        // Tải Ảnh Upload
         function triggerGlobalImageUpload(type, index) {
             currentUploadTarget = { type: type, index: index };
             const fileInput = document.getElementById('global-image-upload');
-            fileInput.value = ''; // Reset input để có thể chọn lại cùng 1 file
+            fileInput.value = ''; 
+            if(type === 'gallery') { fileInput.setAttribute('multiple', 'multiple'); } 
+            else { fileInput.removeAttribute('multiple'); }
             fileInput.click();
         }
 
-        // --- RENDER THÔNG TIN CHƯƠNG TRÌNH (ACCORDION) ---
+        document.getElementById('global-image-upload').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.display = 'flex'; 
+
+            if (currentUploadTarget.type === 'avatar') {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    appData.characters[currentUploadTarget.index].avatar = event.target.result;
+                    saveData(); openModal(currentUploadTarget.index); renderCharacters();
+                    loadingOverlay.style.display = 'none';
+                };
+                reader.readAsDataURL(files[0]);
+                
+            } else if (currentUploadTarget.type === 'gallery') {
+                if (!appData.characters[currentUploadTarget.index].gallery) { appData.characters[currentUploadTarget.index].gallery = []; }
+                let loadedCount = 0;
+                for (let i = 0; i < files.length; i++) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        appData.characters[currentUploadTarget.index].gallery.push(event.target.result);
+                        loadedCount++;
+                        if (loadedCount === files.length) {
+                            saveData(); openModal(currentUploadTarget.index);
+                            loadingOverlay.style.display = 'none';
+                        }
+                    };
+                    reader.readAsDataURL(files[i]);
+                }
+            }
+        });
+
+        // LƯU Ý KỸ THUẬT: Sử dụng 'oninput' thay cho 'onblur' để đảm bảo tính năng Lưu Tức Thời (Real-time Save) hoạt động!
         function renderShowInfo() {
             const container = document.getElementById('show-info-container');
             container.innerHTML = '';
             appData.showInfo.forEach((info, index) => {
                 const item = document.createElement('div');
                 item.className = 'accordion-item';
-                const headerHtml = isAdmin ? `<div style="flex:1" contenteditable="true" onblur="updateInfo(${index}, 'title', this.innerText)">${info.title}</div>` : `<span>${info.title}</span>`;
+                const headerHtml = isAdmin ? `<div style="flex:1" contenteditable="true" oninput="updateInfo(${index}, 'title', this.innerText)">${info.title}</div>` : `<span>${info.title}</span>`;
                 item.innerHTML = `
                     <button class="accordion-header" onclick="toggleAccordion(this)">
                         ${headerHtml}
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="accordion-content">
-                        <div style="padding-top:10px" ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateInfo(${index}, 'content', this.innerHTML)">${info.content}</div>
+                        <div style="padding-top:10px" ${isAdmin ? 'contenteditable="true"' : ''} oninput="updateInfo(${index}, 'content', this.innerHTML)">${info.content}</div>
                     </div>
                 `;
                 container.appendChild(item);
@@ -332,7 +351,6 @@
             else { content.classList.remove('active'); }
         }
 
-        // --- RENDER NHÂN VẬT ---
         function renderCharacters() {
             const container = document.getElementById('cast-container');
             container.innerHTML = '';
@@ -358,12 +376,10 @@
                 if (answer === null) return;
                 if (answer.trim() !== "") { openModal(index); } 
                 else { alert("Bạn chưa nhập câu trả lời. Không thể mở hồ sơ này!"); }
-            } else {
-                openModal(index);
-            }
+            } else { openModal(index); }
         }
 
-        // --- MODAL & GALLERY ---
+        // MODAL
         function openModal(index) {
             currentOpenModalIndex = index;
             const char = appData.characters[index];
@@ -373,23 +389,24 @@
             if(char.gallery && char.gallery.length > 0) {
                 char.gallery.forEach((img, i) => {
                     galleryImages += `
-                        <div class="gallery-item">
-                            <img src="${img}" onclick="changeMainImg(this.src)">
+                        <div class="gallery-item" onclick="changeMainImg(this.querySelector('img').src)">
+                            <img src="${img}">
                             ${isAdmin ? `<button class="admin-btn small delete" onclick="removeGalleryImg(${index}, ${i})"><i class="fas fa-times"></i></button>` : ''}
                         </div>`;
                 });
             }
 
+            // Sử dụng sự kiện 'oninput' để Lưu Tức Thời khi Admin gõ chữ
             let adminControls = isAdmin ? `
-                <div style="margin-top: 10px;">
+                <div style="margin-top: 10px; margin-bottom: 20px;">
                     <button class="admin-btn" onclick="triggerGlobalImageUpload('avatar', ${index})"><i class="fas fa-portrait"></i> Tải Ảnh Đại Diện</button>
                     <button class="admin-btn delete" onclick="deleteCharacter(${index})"><i class="fas fa-trash"></i> Xóa Profile</button>
                 </div>
                 <div class="lock-settings admin-only">
                     <label><input type="checkbox" id="lock-checkbox" ${char.isLocked ? 'checked' : ''} onchange="updateLock(${index})"> Kích hoạt Khóa Profile</label>
                     <div id="lock-inputs" style="display: ${char.isLocked ? 'block' : 'none'};">
-                        <label>Câu hỏi mở khóa (Người dùng chỉ cần gõ bất cứ gì là mở được):</label>
-                        <input type="text" id="lock-question" value="${char.lockQuestion || ''}" onblur="updateLockData(${index})" placeholder="Ví dụ: Ai là người hướng nội nhất?">
+                        <label>Câu hỏi mở khóa:</label>
+                        <input type="text" id="lock-question" value="${char.lockQuestion || ''}" oninput="updateLockData(${index})" placeholder="Ví dụ: Ai là người hướng nội nhất?">
                     </div>
                 </div>
             ` : '';
@@ -397,23 +414,26 @@
             modalBody.innerHTML = `
                 <div class="modal-layout">
                     <div class="modal-left">
+                        <!-- Ảnh chính -->
                         <img src="${char.avatar}" class="modal-main-img" id="main-modal-img" alt="${char.name}">
+                        
+                        <!-- Kho ảnh lướt ngang -->
                         <div class="gallery-container">
                             <div class="gallery-title">Kho ảnh</div>
-                            <div class="gallery-grid">
+                            <div class="gallery-scroll-wrapper">
                                 ${galleryImages}
-                                ${isAdmin ? `<div class="gallery-item" style="display:flex; justify-content:center; align-items:center; border:2px dashed var(--deep-teal);" onclick="triggerGlobalImageUpload('gallery', ${index})"><i class="fas fa-plus" style="color:var(--deep-teal)"></i></div>` : ''}
+                                ${isAdmin ? `<div class="gallery-add-btn" onclick="triggerGlobalImageUpload('gallery', ${index})" title="Thêm nhiều ảnh cùng lúc"><i class="fas fa-plus"></i></div>` : ''}
                             </div>
                         </div>
                     </div>
                     <div class="modal-right">
                         ${adminControls}
-                        <h2 class="modal-title" ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'name', this.innerText)">${char.name}</h2>
-                        <div class="detail-block"><strong>Quê quán:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'hometown', this.innerText)">${char.hometown}</span></div>
-                        <div class="detail-block"><strong>Ngoại hình:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'appearance', this.innerText)">${char.appearance}</span></div>
-                        <div class="detail-block"><strong>Ấn tượng đầu:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'firstImpression', this.innerText)">${char.firstImpression}</span></div>
-                        <div class="detail-block"><strong>Thói quen giao tiếp:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'communication', this.innerText)">${char.communication}</span></div>
-                        <div class="detail-block"><strong>Trong thử thách:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} onblur="updateChar(${index}, 'behavior', this.innerText)">${char.behavior}</span></div>
+                        <h2 class="modal-title" ${isAdmin ? 'contenteditable="true"' : ''} oninput="updateChar(${index}, 'name', this.innerText)">${char.name}</h2>
+                        <div class="detail-block"><strong>Quê quán:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} oninput="updateChar(${index}, 'hometown', this.innerText)">${char.hometown}</span></div>
+                        <div class="detail-block"><strong>Ngoại hình:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} oninput="updateChar(${index}, 'appearance', this.innerText)">${char.appearance}</span></div>
+                        <div class="detail-block"><strong>Ấn tượng đầu:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} oninput="updateChar(${index}, 'firstImpression', this.innerText)">${char.firstImpression}</span></div>
+                        <div class="detail-block"><strong>Thói quen giao tiếp:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} oninput="updateChar(${index}, 'communication', this.innerText)">${char.communication}</span></div>
+                        <div class="detail-block"><strong>Trong thử thách:</strong> <span ${isAdmin ? 'contenteditable="true"' : ''} oninput="updateChar(${index}, 'behavior', this.innerText)">${char.behavior}</span></div>
                     </div>
                 </div>
             `;
@@ -430,7 +450,6 @@
             }
         }
 
-        // Logic Admin
         function updateLock(index) {
             const isChecked = document.getElementById('lock-checkbox').checked;
             appData.characters[index].isLocked = isChecked;
@@ -439,7 +458,10 @@
         }
         function updateLockData(index) { appData.characters[index].lockQuestion = document.getElementById('lock-question').value; saveData(); }
         function updateInfo(index, field, value) { appData.showInfo[index][field] = value; saveData(); }
+        
+        // Render characters ở background, không đè modal (Tạo hiệu ứng gõ đến đâu, card cập nhật đến đó)
         function updateChar(index, field, value) { appData.characters[index][field] = value; saveData(); renderCharacters(); }
+        
         function deleteCharacter(index) {
             if(confirm("Bạn có chắc muốn xóa vĩnh viễn Profile này?")) {
                 appData.characters.splice(index, 1); saveData();
@@ -456,8 +478,6 @@
             saveData(); renderCharacters();
         });
 
-        function saveData() { localStorage.setItem('loveMapData', JSON.stringify(appData)); }
-
         document.querySelector('.close-btn').addEventListener('click', () => { document.getElementById('character-modal').style.display = 'none'; });
         window.onclick = function(event) { if (event.target == document.getElementById('character-modal')) { document.getElementById('character-modal').style.display = 'none'; } }
 
@@ -466,7 +486,7 @@
                 const pass = prompt("Nhập mã truy cập Quản trị viên:");
                 if (pass === adminPassword) {
                     isAdmin = true; document.body.classList.add('is-admin');
-                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n- Các tính năng Upload Ảnh File (Không dùng link), Chỉnh sửa, Khóa Profile đã sẵn sàng.");
+                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n\nTất cả dữ liệu bạn gõ giờ đây sẽ được LƯU TỰ ĐỘNG TỨC THỜI. Gõ xong là có thể yên tâm thoát trang nhé!");
                     renderShowInfo(); renderCharacters();
                     if(currentOpenModalIndex !== null && document.getElementById('character-modal').style.display === 'block') { openModal(currentOpenModalIndex); }
                 } else if (pass !== null) alert("Mã sai!");
@@ -476,9 +496,6 @@
                 if(currentOpenModalIndex !== null && document.getElementById('character-modal').style.display === 'block') { openModal(currentOpenModalIndex); }
             }
         });
-
-        renderShowInfo();
-        renderCharacters();
     </script>
 </body>
 </html>
