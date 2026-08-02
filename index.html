@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- THẺ NÀY ÉP TRÌNH DUYỆT KHÔNG ĐƯỢC TỰ ĐỘNG BẬT DARK MODE -->
     <meta name="color-scheme" content="light">
-    
     <title>Love Map: Tọa Độ Tình Yêu</title>
     
     <link rel="icon" type="image/png" href="./logo.png">
@@ -15,12 +12,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Thư viện localForage (IndexedDB) -->
+    <!-- SUPABASE JS CLIENT & LOCALFORAGE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     
     <style>
         :root {
-            color-scheme: light; /* Bắt buộc dải màu sáng */
+            color-scheme: light;
             --deep-teal: #0F5E68;
             --ivory: #F7F4EE;
             --warm-beige: #DAD2CB;
@@ -33,7 +31,6 @@
 
         body { font-family: var(--font-body); background-color: var(--warm-beige) !important; color: var(--text-dark) !important; line-height: 1.6; padding: 20px; }
 
-        /* Khung lá thư chính */
         .letter-container { max-width: 1000px; margin: 0 auto; background-color: var(--ivory) !important; padding: 40px 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #c9c1b9; position: relative; }
         .letter-container::before, .letter-container::after { content: ''; position: absolute; width: 40px; height: 40px; border: 2px solid var(--deep-teal); }
         .letter-container::before { top: 20px; left: 20px; border-right: none; border-bottom: none; }
@@ -68,33 +65,28 @@
         .cast-name { font-family: var(--font-heading); color: var(--deep-teal) !important; font-size: 1.5rem; font-weight: bold; }
         .lock-icon { position: absolute; top: 10px; right: 10px; background: rgba(15, 94, 104, 0.9) !important; color: var(--ivory) !important; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 1rem; z-index: 10; }
         .no-cast-msg { text-align: center; color: #888 !important; font-style: italic; width: 100%; grid-column: 1/-1; padding: 20px; }
-
-        /* HIỆU ỨNG LÀM MỜ BÍ ẨN CHO AVATAR BỊ KHÓA */
         .locked-avatar::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 94, 104, 0.4); z-index: 1; }
         .locked-avatar img { filter: blur(15px) brightness(0.8); transform: scale(1.15); }
 
-        /* Modal Chi tiết nhân vật */
+        /* Modal */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(29, 51, 54, 0.8); backdrop-filter: blur(5px); }
         .modal-content { background-color: var(--ivory) !important; margin: 3% auto; padding: 40px; border: 2px solid var(--deep-teal); width: 95%; max-width: 1000px; position: relative; max-height: 90vh; overflow-y: auto; color: var(--text-dark) !important; }
         .close-btn { position: absolute; right: 25px; top: 20px; color: var(--deep-teal) !important; font-size: 30px; font-weight: bold; cursor: pointer; }
         .modal-layout { display: flex; gap: 40px; flex-wrap: wrap; }
         .modal-left { flex: 1.2; min-width: 320px; display: flex; flex-direction: column; }
         .modal-right { flex: 1; min-width: 300px; }
-        
         .modal-main-img { width: 100%; height: auto; max-height: 65vh; object-fit: contain; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #fff !important; border-radius: 4px; }
-        
         .modal-title { font-family: var(--font-heading); color: var(--deep-teal) !important; font-size: 2.5rem; margin-bottom: 20px; border-bottom: 2px solid var(--warm-beige); padding-bottom: 10px; }
         .detail-block { margin-bottom: 15px; line-height: 1.8; }
         .detail-block strong { color: var(--deep-teal) !important; font-family: var(--font-heading); font-size: 1.1rem; }
 
-        /* Kho ảnh lướt ngang */
+        /* Kho ảnh */
         .gallery-container { margin-top: 20px; width: 100%; }
         .gallery-title { font-family: var(--font-heading); color: var(--deep-teal) !important; margin-bottom: 10px; font-size: 1.3rem; }
         .gallery-scroll-wrapper { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; flex-wrap: nowrap; align-items: stretch; scrollbar-width: thin; scrollbar-color: var(--deep-teal) var(--warm-beige); }
         .gallery-scroll-wrapper::-webkit-scrollbar { height: 8px; }
         .gallery-scroll-wrapper::-webkit-scrollbar-track { background: var(--warm-beige); border-radius: 4px; }
         .gallery-scroll-wrapper::-webkit-scrollbar-thumb { background: var(--deep-teal); border-radius: 4px; }
-        
         .gallery-item { height: 100px; width: auto; flex-shrink: 0; cursor: pointer; border: 2px solid transparent; transition: 0.2s; position: relative; background: #fff !important; }
         .gallery-item img { height: 100%; width: auto; max-width: 250px; object-fit: contain; display: block; }
         .gallery-item:hover { border-color: var(--deep-teal); }
@@ -118,7 +110,7 @@
         .lock-settings label { font-weight: bold; color: #d35400 !important; }
         .lock-settings input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #fdcb6e; background: #fff !important; color: #000 !important;}
 
-        /* Hộp Nhạc */
+        /* Hộp Nhạc & Sync Status */
         .music-player { position: fixed; bottom: 30px; right: 30px; z-index: 999; }
         .music-btn { width: 60px; height: 60px; border-radius: 50%; background: var(--deep-teal) !important; color: var(--ivory) !important; border: 2px solid var(--warm-beige); cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 1.5rem; transition: transform 0.3s; display: flex; align-items: center; justify-content: center; }
         .music-btn:hover { transform: scale(1.1); }
@@ -127,34 +119,32 @@
         #music-notes-container { position: absolute; bottom: 50px; left: 15px; width: 30px; }
         .floating-note { position: absolute; bottom: 0; color: var(--deep-teal) !important; font-size: 1.2rem; opacity: 0; animation: floatUp 2.5s ease-out forwards; pointer-events: none; }
         @keyframes floatUp { 0% { transform: translateY(0) scale(0.8); opacity: 1; } 50% { opacity: 1; transform: translateY(-60px) scale(1.2) translateX(15px); } 100% { transform: translateY(-120px) scale(1) translateX(-10px); opacity: 0; } }
+        
+        #sync-status { display: none; position: fixed; bottom: 30px; left: 30px; background: rgba(255,255,255,0.9); padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; color: var(--deep-teal); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 999; border: 1px solid var(--deep-teal); }
+        
         footer { text-align: center; padding-top: 40px; font-family: var(--font-heading); color: var(--deep-teal) !important; margin-top: 40px; border-top: 1px solid var(--warm-beige); }
         @media (max-width: 768px) { .letter-container { padding: 20px; } h1 { font-size: 2rem; } .modal-layout { flex-direction: column; } }
         
-        /* Loading Overlay */
         #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; color: white !important; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5rem; }
         .spinner { border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid #fff; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
-
-        /* Bảng Playlist Admin */
         #playlist-admin-container { margin-top: 15px; text-align: left; font-size: 0.9rem; background: var(--ivory) !important; padding: 10px; border-radius: 4px; }
         .playlist-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--warm-beige); padding: 5px 0; }
         .playlist-item:last-child { border-bottom: none; }
         .song-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%; color: var(--deep-teal) !important; font-weight: 500;}
-        
-        /* Đảm bảo chữ nhập liệu luôn dễ đọc kể cả khi trình duyệt tự ép màu */
         input[type="text"] { color: #000 !important; background: #fff !important; }
     </style>
 </head>
 <body>
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p id="loading-text">Đang xử lý, vui lòng đợi...</p>
+        <p id="loading-text">Đang kết nối Cloud, vui lòng đợi...</p>
     </div>
 
-    <!-- Input file ẩn -->
+    <div id="sync-status"><i class="fas fa-sync fa-spin"></i> Đang đồng bộ...</div>
+
     <input type="file" id="global-image-upload" accept="image/*" style="display: none;">
 
     <div class="letter-container">
-        <!-- Header -->
         <header>
             <h1 id="main-title" title="Nhấp đúp để vào chế độ Quản trị">LOVE MAP: TỌA ĐỘ TÌNH YÊU</h1>
             <div class="admin-indicator" id="admin-indicator"><i class="fas fa-unlock-alt"></i> Chế độ Admin đang bật</div>
@@ -171,7 +161,6 @@
                 <h2 class="section-title"><i class="fas fa-envelope"></i> Thông tin chương trình <i class="fas fa-envelope"></i></h2>
                 <div id="show-info-container" class="info-grid"></div>
 
-                <!-- KHU VỰC NÚT LINK GG AI STUDIO -->
                 <div style="text-align: center; margin-top: 30px;">
                     <a id="ai-studio-link" href="#" target="_blank" class="studio-btn" style="display: none;">
                         <i class="fas fa-robot"></i> Chuyển đến GG AI Studio
@@ -207,7 +196,6 @@
         </div>
     </div>
 
-    <!-- Hộp nhạc Player -->
     <audio id="bg-music"></audio>
     <div id="music-player" class="music-player">
         <div id="music-notes-container"></div>
@@ -217,14 +205,20 @@
     </div>
 
     <script>
-        // --- CẤU HÌNH DỮ LIỆU ---
+        // ==========================================
+        // CẤU HÌNH SUPABASE ĐÃ ĐƯỢC TÍCH HỢP TỰ ĐỘNG
+        // ==========================================
+        const supabaseUrl = 'https://xdqanrqpgognavsfkrtt.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkcWFucnFwZ29nbmF2c2ZrcnR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2NzE3NTAsImV4cCI6MjEwMTI0Nzc1MH0.f_EXEkRLrZXTyHTrp5jyRiw0tlvDjkepDcbo6IrO95o';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
         const defaultData = {
             showInfo: [
                 { title: "Hình thức phát sóng", content: "Toàn bộ quá trình được phát trực tiếp (Livestream) độc quyền trên mạng xã hội Meown, kênh “lovemapVN”. Sau mỗi chặng làm thành 1-2 tập đăng lại." },
                 { title: "Thời lượng", content: "15 ngày khám phá 5 tỉnh thành, mỗi tỉnh thành ở lại 3 ngày 2 đêm." },
                 { title: "Người tham gia", content: "Gồm 8 thành viên chính thức (4 nam - 4 nữ) và 4 khách mời (2 nam - 2 nữ, xuất hiện chặng 2 và chặng 3)." },
-                { title: "Quy tắc của chương trình", content: "<ul><li>Không kịch bản, không dàn dựng, mọi tương tác diễn ra tự nhiên.</li><li>Nghiêm cấm các hành vi thô bạo, gây thương tích.</li><li>Không tiết lộ tuổi tác và nghề nghiệp (trừ khi vào Đêm Tiết Lộ).</li><li>Bị tịch thu điện thoại và các thiết bị liên lạc.</li></ul>" },
-                { title: "Lịch trình", content: "<ul><li><strong>Sáng:</strong> Chơi mini-game phân cấp phương tiện di chuyển hoặc thực đơn.</li><li><strong>Trưa - Chiều:</strong> Xáo trộn cặp đôi, tham gia thử thách lớn địa phương hoặc phòng phỏng vấn định mệnh.</li><li><strong>Tối:</strong> Lửa trại, viết thư mật (20 phút). Chơi game phân cấp chỗ ngủ.</li><li><strong>Đêm Tiết Lộ:</strong> Cuối chặng, cặp vote cao nhất được 14h ở Homestay riêng tư, tiết lộ thân phận, tắt máy quay.</li></ul>" },
+                { title: "Quy tắc của chương trình", content: "<ul><li>Không kịch bản, không dàn dựng, mọi tương tác diễn ra tự nhiên.</li><li>Nghiêm cấm các hành vi thô bạo, gây thương tích.</li><li>Không tiết lộ tuổi tác và nghề nghiệp.</li><li>Bị tịch thu điện thoại và các thiết bị liên lạc.</li></ul>" },
+                { title: "Lịch trình", content: "<ul><li><strong>Sáng:</strong> Chơi mini-game phân cấp phương tiện di chuyển hoặc thực đơn.</li><li><strong>Trưa - Chiều:</strong> Xáo trộn cặp đôi, tham gia thử thách lớn địa phương hoặc phòng phỏng vấn định mệnh.</li><li><strong>Tối:</strong> Lửa trại, viết thư mật. Chơi game phân cấp chỗ ngủ.</li><li><strong>Đêm Tiết Lộ:</strong> Cuối chặng, cặp vote cao nhất được 14h ở Homestay riêng tư, tiết lộ thân phận, tắt máy quay.</li></ul>" },
                 { title: "Lệnh RP", content: "Gõ <code>/batdau</code> để tham gia hành trình. Gõ <code>/thongtin</code> để kiểm tra chỉ số tình cảm." }
             ],
             characters: [], 
@@ -238,57 +232,82 @@
         let currentOpenModalIndex = null;
         let currentUploadTarget = null; 
 
-        // Khởi tạo DB & Migrate
-        localforage.getItem('loveMapData').then(function(value) {
-            if (value) {
-                appData = value;
-                if(appData.musicData && (!appData.playlist || appData.playlist.length === 0)) {
-                    appData.playlist = [{ name: "Nhạc nền hiện tại", data: appData.musicData }];
-                    delete appData.musicData;
+        // --- HỆ THỐNG ĐỒNG BỘ CLOUD (SUPABASE) ---
+        async function fetchInitialData() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            try {
+                const { data, error } = await supabaseClient.from('lovemap').select('content').eq('id', 1).single();
+                if (data && data.content && Object.keys(data.content).length > 0) {
+                    appData = data.content;
+                    
+                    let needSave = false;
+                    if(!appData.playlist) { appData.playlist = []; needSave = true; }
+                    if(appData.aiStudioLink === undefined) { appData.aiStudioLink = ""; needSave = true; }
+                    if(appData.characters) {
+                        appData.characters.forEach(char => {
+                            if(!char.details) {
+                                char.details = [
+                                    { label: "Quê quán", value: char.hometown || "" },
+                                    { label: "Ngoại hình", value: char.appearance || "" },
+                                    { label: "Ấn tượng đầu", value: char.firstImpression || "" },
+                                    { label: "Thói quen giao tiếp", value: char.communication || "" },
+                                    { label: "Trong thử thách", value: char.behavior || "" }
+                                ];
+                                delete char.hometown; delete char.appearance; delete char.firstImpression; delete char.communication; delete char.behavior;
+                                needSave = true;
+                            }
+                        });
+                    }
+                    if(needSave) saveData(true); 
+                } else if (!data) {
+                    // Nếu chưa có dữ liệu trên cloud thì lưu mặc định lên
+                    saveData(true);
                 }
-                if(!appData.playlist) appData.playlist = [];
-                if(appData.aiStudioLink === undefined) appData.aiStudioLink = "";
-                
-                if(appData.characters) {
-                    appData.characters.forEach(char => {
-                        if(!char.details) {
-                            char.details = [
-                                { label: "Quê quán", value: char.hometown || "" },
-                                { label: "Ngoại hình", value: char.appearance || "" },
-                                { label: "Ấn tượng đầu", value: char.firstImpression || "" },
-                                { label: "Thói quen giao tiếp", value: char.communication || "" },
-                                { label: "Trong thử thách", value: char.behavior || "" }
-                            ];
-                            delete char.hometown; delete char.appearance; delete char.firstImpression; delete char.communication; delete char.behavior;
-                        }
-                    });
-                }
-                saveData();
+            } catch (err) {
+                console.error("Supabase load error:", err);
             }
+            document.getElementById('loading-overlay').style.display = 'none';
             initApp();
-        }).catch(function(err) {
-            console.log("Lỗi load dữ liệu:", err);
-            initApp();
-        });
+        }
 
-        function saveData() { localforage.setItem('loveMapData', appData).catch(function (err) { alert("Lỗi lưu trữ: " + err); }); }
+        let saveTimeout;
+        function saveData(silent = false) {
+            const syncUI = document.getElementById('sync-status');
+            if(!silent && syncUI) { 
+                syncUI.style.display = 'block'; 
+                syncUI.innerHTML = '<i class="fas fa-sync fa-spin"></i> Đang đồng bộ...'; 
+            }
+
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                const { error } = await supabaseClient.from('lovemap').upsert({ id: 1, content: appData });
+                if(!silent && syncUI) {
+                    if(error) {
+                        console.error("Lỗi đồng bộ:", error);
+                        syncUI.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:red"></i> Lỗi đồng bộ';
+                    } else {
+                        syncUI.innerHTML = '<i class="fas fa-check-circle" style="color:green"></i> Đã lưu Cloud';
+                        setTimeout(() => syncUI.style.display = 'none', 2000);
+                    }
+                }
+            }, 1000); // 1 giây lưu 1 lần
+        }
 
         function initApp() {
-            renderShowInfo();
-            renderCharacters();
-            renderStudioLink();
+            renderShowInfo(); renderCharacters(); renderStudioLink();
         }
+
+        // Bắt đầu tải dữ liệu Cloud
+        fetchInitialData();
 
         // --- CÀI ĐẶT LINK GG AI STUDIO ---
         function renderStudioLink() {
             const linkBtn = document.getElementById('ai-studio-link');
             const linkInput = document.getElementById('ai-studio-input');
             if (appData.aiStudioLink && appData.aiStudioLink.trim() !== "") {
-                linkBtn.href = appData.aiStudioLink;
-                linkBtn.style.display = 'inline-block';
+                linkBtn.href = appData.aiStudioLink; linkBtn.style.display = 'inline-block';
             } else {
-                linkBtn.href = "#";
-                linkBtn.style.display = isAdmin ? 'inline-block' : 'none';
+                linkBtn.href = "#"; linkBtn.style.display = isAdmin ? 'inline-block' : 'none';
             }
             if (isAdmin) { linkInput.value = appData.aiStudioLink || ""; }
         }
@@ -348,7 +367,7 @@
             const files = e.target.files;
             if (!files || files.length === 0) return;
             const loadingOverlay = document.getElementById('loading-overlay');
-            document.getElementById('loading-text').innerText = "Đang xử lý âm thanh, vui lòng đợi...";
+            document.getElementById('loading-text').innerText = "Đang tải bài hát lên Cloud...";
             loadingOverlay.style.display = 'flex'; 
             if(!appData.playlist) appData.playlist = [];
             let loadedCount = 0;
@@ -361,7 +380,6 @@
                     if (loadedCount === files.length) {
                         saveData(); renderPlaylistAdmin();
                         loadingOverlay.style.display = 'none';
-                        alert("Tải danh sách nhạc thành công!");
                     }
                 };
                 reader.readAsDataURL(files[i]);
@@ -383,7 +401,7 @@
         }
 
         function deleteSong(index) {
-            if(confirm("Xóa bài hát này khỏi Playlist?")) {
+            if(confirm("Xóa bài hát này khỏi Cloud?")) {
                 appData.playlist.splice(index, 1); saveData(); renderPlaylistAdmin();
                 if(currentSongIndex === index) {
                     audioEl.pause(); musicBtn.classList.remove('playing'); clearInterval(noteInterval);
@@ -405,7 +423,7 @@
             const files = e.target.files;
             if (!files || files.length === 0) return;
             const loadingOverlay = document.getElementById('loading-overlay');
-            document.getElementById('loading-text').innerText = "Đang xử lý ảnh, vui lòng đợi...";
+            document.getElementById('loading-text').innerText = "Đang đẩy ảnh lên Cloud...";
             loadingOverlay.style.display = 'flex'; 
 
             if (currentUploadTarget.type === 'avatar') {
@@ -576,7 +594,7 @@
         
         function removeGalleryImg(charIndex, imgIndex) {
             event.stopPropagation();
-            if(confirm("Xóa ảnh này khỏi kho?")) {
+            if(confirm("Xóa ảnh này khỏi mây?")) {
                 appData.characters[charIndex].gallery.splice(imgIndex, 1);
                 saveData(); openModal(charIndex);
             }
@@ -606,7 +624,7 @@
         function updateCharName(index, val) { appData.characters[index].name = val; saveData(); renderCharacters(); }
         
         function deleteCharacter(index) {
-            if(confirm("Bạn có chắc muốn xóa vĩnh viễn Profile này?")) {
+            if(confirm("Bạn có chắc muốn xóa vĩnh viễn Profile này khỏi Cloud?")) {
                 appData.characters.splice(index, 1); saveData();
                 document.getElementById('character-modal').style.display = 'none'; renderCharacters();
             }
@@ -635,7 +653,7 @@
                 const pass = prompt("Nhập mã truy cập Quản trị viên:");
                 if (pass === adminPassword) {
                     isAdmin = true; document.body.classList.add('is-admin');
-                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n\nWebsite đã được TẮT tự động nền tối trên điện thoại, giao diện sẽ luôn sáng và chuẩn tông màu gốc!");
+                    alert("ĐÃ MỞ KHÓA QUẢN TRỊ!\n\nHệ thống đồng bộ Đám mây (Supabase) đã được kích hoạt. Mọi thao tác sẽ tự động đồng bộ sang tất cả thiết bị.");
                     renderShowInfo(); renderCharacters(); renderPlaylistAdmin(); renderStudioLink();
                     if(currentOpenModalIndex !== null && document.getElementById('character-modal').style.display === 'block') { openModal(currentOpenModalIndex); }
                 } else if (pass !== null) alert("Mã sai!");
