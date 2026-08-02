@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light">
+    <!-- Ép trình duyệt thiết bị di động chỉ sử dụng chế độ Light Mode -->
+    <meta name="color-scheme" content="only light">
     <title>Love Map: Tọa Độ Tình Yêu</title>
     
     <link rel="icon" type="image/png" href="./logo.png">
@@ -15,7 +16,8 @@
     
     <style>
         :root {
-            color-scheme: light;
+            /* Ngăn chặn tuyệt đối việc tự động đảo màu của Dark Mode trên di động */
+            color-scheme: only light;
             --deep-teal: #0F5E68;
             --ivory: #F7F4EE;
             --warm-beige: #DAD2CB;
@@ -25,8 +27,11 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--font-body); background-color: var(--warm-beige) !important; color: var(--text-dark) !important; line-height: 1.6; padding: 20px; }
-        .letter-container { max-width: 1000px; margin: 0 auto; background-color: var(--ivory) !important; padding: 40px 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #c9c1b9; position: relative; }
+        
+        /* Chốt cứng màu bằng HEX code kết hợp !important để chống trình duyệt can thiệp */
+        body { font-family: var(--font-body); background-color: #DAD2CB !important; color: #1d3336 !important; line-height: 1.6; padding: 20px; }
+        .letter-container { max-width: 1000px; margin: 0 auto; background-color: #F7F4EE !important; padding: 40px 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #c9c1b9; position: relative; }
+        
         .letter-container::before, .letter-container::after { content: ''; position: absolute; width: 40px; height: 40px; border: 2px solid var(--deep-teal); }
         .letter-container::before { top: 20px; left: 20px; border-right: none; border-bottom: none; }
         .letter-container::after { bottom: 20px; right: 20px; border-left: none; border-top: none; }
@@ -36,36 +41,36 @@
         .section-title i { font-size: 1.2rem; color: var(--warm-beige) !important; }
 
         .info-grid { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
-        .accordion-item { border: 1px solid var(--warm-beige); background: #fff !important; }
-        .accordion-header { width: 100%; text-align: left; padding: 15px 20px; background: var(--ivory) !important; border: none; color: var(--deep-teal) !important; font-family: var(--font-heading); font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
-        .accordion-header:hover { background: var(--warm-beige) !important; }
+        .accordion-item { border: 1px solid var(--warm-beige); background: #ffffff !important; }
+        .accordion-header { width: 100%; text-align: left; padding: 15px 20px; background: #F7F4EE !important; border: none; color: var(--deep-teal) !important; font-family: var(--font-heading); font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
+        .accordion-header:hover { background: #DAD2CB !important; }
         .accordion-header i { transition: transform 0.3s; color: var(--deep-teal) !important; }
         .accordion-header.active i { transform: rotate(180deg); }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; background: #fff !important; padding: 0 20px; color: var(--text-dark) !important;}
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; background: #ffffff !important; padding: 0 20px; color: #1d3336 !important;}
         .accordion-content.active { padding: 20px; max-height: 1000px; } 
         .accordion-content ul { padding-left: 20px; }
 
-        .studio-btn { display: inline-block; background: var(--deep-teal) !important; color: var(--ivory) !important; padding: 12px 30px; border-radius: 30px; text-decoration: none; font-family: var(--font-heading); font-size: 1.2rem; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(15, 94, 104, 0.2); margin-top: 10px; }
-        .studio-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(15, 94, 104, 0.3); color: #fff !important; }
+        .studio-btn { display: inline-block; background: var(--deep-teal) !important; color: #F7F4EE !important; padding: 12px 30px; border-radius: 30px; text-decoration: none; font-family: var(--font-heading); font-size: 1.2rem; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(15, 94, 104, 0.2); margin-top: 10px; }
+        .studio-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(15, 94, 104, 0.3); color: #ffffff !important; }
 
         .cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; margin-bottom: 30px; margin-top: 40px;}
-        .cast-card { background: #fff !important; padding: 15px; border: 1px solid var(--warm-beige); box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s ease; position: relative; text-align: center; }
+        .cast-card { background: #ffffff !important; padding: 15px; border: 1px solid var(--warm-beige); box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s ease; position: relative; text-align: center; }
         .cast-card:hover { transform: translateY(-10px) rotate(2deg); box-shadow: 0 15px 25px rgba(15, 94, 104, 0.2); }
         .cast-img-wrapper { width: 100%; aspect-ratio: 3/4; overflow: hidden; border: 1px solid var(--warm-beige); margin-bottom: 15px; position: relative; }
         .cast-img-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s, transform 0.3s; }
         .cast-name { font-family: var(--font-heading); color: var(--deep-teal) !important; font-size: 1.5rem; font-weight: bold; }
-        .lock-icon { position: absolute; top: 10px; right: 10px; background: rgba(15, 94, 104, 0.9) !important; color: var(--ivory) !important; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 1rem; z-index: 10; }
-        .no-cast-msg { text-align: center; color: #888 !important; font-style: italic; width: 100%; grid-column: 1/-1; padding: 20px; }
+        .lock-icon { position: absolute; top: 10px; right: 10px; background: rgba(15, 94, 104, 0.9) !important; color: #F7F4EE !important; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 1rem; z-index: 10; }
+        .no-cast-msg { text-align: center; color: #888888 !important; font-style: italic; width: 100%; grid-column: 1/-1; padding: 20px; }
         .locked-avatar::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 94, 104, 0.4); z-index: 1; }
         .locked-avatar img { filter: blur(15px) brightness(0.8); transform: scale(1.15); }
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(29, 51, 54, 0.8); backdrop-filter: blur(5px); }
-        .modal-content { background-color: var(--ivory) !important; margin: 3% auto; padding: 40px; border: 2px solid var(--deep-teal); width: 95%; max-width: 1000px; position: relative; max-height: 90vh; overflow-y: auto; color: var(--text-dark) !important; }
+        .modal-content { background-color: #F7F4EE !important; margin: 3% auto; padding: 40px; border: 2px solid var(--deep-teal); width: 95%; max-width: 1000px; position: relative; max-height: 90vh; overflow-y: auto; color: #1d3336 !important; }
         .close-btn { position: absolute; right: 25px; top: 20px; color: var(--deep-teal) !important; font-size: 30px; font-weight: bold; cursor: pointer; }
         .modal-layout { display: flex; gap: 40px; flex-wrap: wrap; }
         .modal-left { flex: 1.2; min-width: 320px; display: flex; flex-direction: column; }
         .modal-right { flex: 1; min-width: 300px; }
-        .modal-main-img { width: 100%; height: auto; max-height: 65vh; object-fit: contain; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #fff !important; border-radius: 4px; }
+        .modal-main-img { width: 100%; height: auto; max-height: 65vh; object-fit: contain; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #ffffff !important; border-radius: 4px; }
         .modal-title { font-family: var(--font-heading); color: var(--deep-teal) !important; font-size: 2.5rem; margin-bottom: 20px; border-bottom: 2px solid var(--warm-beige); padding-bottom: 10px; }
         .detail-block { margin-bottom: 15px; line-height: 1.8; }
         .detail-block strong { color: var(--deep-teal) !important; font-family: var(--font-heading); font-size: 1.1rem; }
@@ -76,34 +81,34 @@
         .gallery-scroll-wrapper::-webkit-scrollbar { height: 8px; }
         .gallery-scroll-wrapper::-webkit-scrollbar-track { background: var(--warm-beige); border-radius: 4px; }
         .gallery-scroll-wrapper::-webkit-scrollbar-thumb { background: var(--deep-teal); border-radius: 4px; }
-        .gallery-item { height: 100px; width: auto; flex-shrink: 0; cursor: pointer; border: 2px solid transparent; transition: 0.2s; position: relative; background: #fff !important; }
+        .gallery-item { height: 100px; width: auto; flex-shrink: 0; cursor: pointer; border: 2px solid transparent; transition: 0.2s; position: relative; background: #ffffff !important; }
         .gallery-item img { height: 100%; width: auto; max-width: 250px; object-fit: contain; display: block; }
         .gallery-item:hover { border-color: var(--deep-teal); }
         .gallery-add-btn { height: 100px; width: 100px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; border: 2px dashed var(--deep-teal); cursor: pointer; font-size: 1.5rem; color: var(--deep-teal) !important; background: rgba(15, 94, 104, 0.05); transition: 0.2s; }
         .gallery-add-btn:hover { background: rgba(15, 94, 104, 0.1); }
 
-        .admin-indicator { display: none; background: #c0392b !important; color: white !important; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; position: absolute; top: 0px; right: 0px; }
+        .admin-indicator { display: none; background: #c0392b !important; color: #ffffff !important; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; position: absolute; top: 0px; right: 0px; }
         .is-admin .admin-indicator { display: block; }
         .admin-only { display: none !important; }
         .is-admin .admin-only { display: inline-block !important; }
         
-        .admin-audio-panel { background: #fff !important; border: 1px dashed var(--deep-teal); padding: 20px; margin: 20px auto 0; max-width: 600px; text-align: left; color: var(--text-dark) !important;}
+        .admin-audio-panel { background: #ffffff !important; border: 1px dashed var(--deep-teal); padding: 20px; margin: 20px auto 0; max-width: 600px; text-align: left; color: #1d3336 !important;}
         .is-admin .admin-audio-panel { display: block !important; }
         .music-input-group { display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px;}
         .music-input-group input { flex: 1; padding: 10px; border: 1px solid var(--warm-beige); }
         
         .is-admin [contenteditable="true"] { outline: 1px dashed #c0392b; padding: 2px; background: rgba(192, 57, 43, 0.05); }
-        .is-admin [contenteditable="true"]:focus { outline: 2px solid #c0392b; background: #fff !important; }
-        .admin-btn { background: var(--deep-teal) !important; color: var(--ivory) !important; border: none; padding: 8px 12px; cursor: pointer; font-family: var(--font-body); font-size: 0.85rem; margin: 5px 2px; transition: 0.2s; }
+        .is-admin [contenteditable="true"]:focus { outline: 2px solid #c0392b; background: #ffffff !important; }
+        .admin-btn { background: var(--deep-teal) !important; color: #F7F4EE !important; border: none; padding: 8px 12px; cursor: pointer; font-family: var(--font-body); font-size: 0.85rem; margin: 5px 2px; transition: 0.2s; }
         .admin-btn:hover { opacity: 0.9; }
         .admin-btn.delete { background: #c0392b !important; }
         .admin-btn.small { padding: 4px 8px; font-size: 0.75rem; position: absolute; top: 0; right: 0; z-index: 10; background: rgba(192, 57, 43, 0.9) !important; }
         .lock-settings { background: #ffeaa7 !important; padding: 15px; border: 1px solid #fdcb6e; margin-bottom: 20px; }
         .lock-settings label { font-weight: bold; color: #d35400 !important; }
-        .lock-settings input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #fdcb6e; background: #fff !important; color: #000 !important;}
+        .lock-settings input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #fdcb6e; background: #ffffff !important; color: #000000 !important;}
 
         .music-player { position: fixed; bottom: 30px; right: 30px; z-index: 999; }
-        .music-btn { width: 60px; height: 60px; border-radius: 50%; background: var(--deep-teal) !important; color: var(--ivory) !important; border: 2px solid var(--warm-beige); cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 1.5rem; transition: transform 0.3s; display: flex; align-items: center; justify-content: center; }
+        .music-btn { width: 60px; height: 60px; border-radius: 50%; background: var(--deep-teal) !important; color: #F7F4EE !important; border: 2px solid var(--warm-beige); cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 1.5rem; transition: transform 0.3s; display: flex; align-items: center; justify-content: center; }
         .music-btn:hover { transform: scale(1.1); }
         .music-btn.playing { animation: spin 4s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -116,13 +121,13 @@
         footer { text-align: center; padding-top: 40px; font-family: var(--font-heading); color: var(--deep-teal) !important; margin-top: 40px; border-top: 1px solid var(--warm-beige); }
         @media (max-width: 768px) { .letter-container { padding: 20px; } h1 { font-size: 2rem; } .modal-layout { flex-direction: column; } .music-input-group { flex-direction: column; } }
         
-        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; color: white !important; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5rem; }
-        .spinner { border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid #fff; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        #playlist-admin-container { margin-top: 15px; text-align: left; font-size: 0.9rem; background: var(--ivory) !important; padding: 10px; border-radius: 4px; border: 1px solid var(--warm-beige); }
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; color: #ffffff !important; flex-direction: column; justify-content: center; align-items: center; font-size: 1.5rem; }
+        .spinner { border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid #ffffff; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        #playlist-admin-container { margin-top: 15px; text-align: left; font-size: 0.9rem; background: #F7F4EE !important; padding: 10px; border-radius: 4px; border: 1px solid var(--warm-beige); }
         .playlist-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--warm-beige); padding: 8px 0; }
         .playlist-item:last-child { border-bottom: none; }
         .song-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%; color: var(--deep-teal) !important; font-weight: 500;}
-        input[type="text"] { color: #000 !important; background: #fff !important; }
+        input[type="text"] { color: #000000 !important; background: #ffffff !important; }
     </style>
 </head>
 <body>
@@ -163,7 +168,7 @@
                         <i class="fas fa-robot"></i> Chuyển đến GG AI Studio
                     </a>
                     
-                    <div class="admin-only" style="margin-top: 15px; background: #fff !important; padding: 15px; border: 1px dashed var(--deep-teal); display: inline-block; text-align: left; width: 100%; max-width: 500px; border-radius: 5px;">
+                    <div class="admin-only" style="margin-top: 15px; background: #ffffff !important; padding: 15px; border: 1px dashed var(--deep-teal); display: inline-block; text-align: left; width: 100%; max-width: 500px; border-radius: 5px;">
                         <label style="color: var(--deep-teal) !important; font-weight: bold;"><i class="fas fa-link"></i> Cài đặt Link GG AI Studio:</label>
                         <input type="text" id="ai-studio-input" oninput="updateStudioLink(this.value)" placeholder="Dán đường link (URL) vào đây..." style="width: 100%; padding: 10px; margin-top: 8px; border: 1px solid var(--warm-beige);">
                     </div>
@@ -228,18 +233,14 @@
         async function fetchInitialData() {
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
-                // Thử lấy dữ liệu từ Supabase trước
                 const { data, error } = await supabaseClient.from('lovemap').select('content').eq('id', 1).single();
-                
                 if (data && data.content) {
                     appData = data.content;
                 } else {
-                    // Nếu Cloud trống, thử lấy từ LocalForage
                     const localData = await localforage.getItem('lovemap_backup');
                     appData = localData ? localData : defaultData;
                 }
 
-                // Chuẩn hóa dữ liệu
                 let needSave = false;
                 if(!appData.showInfo) { appData.showInfo = defaultData.showInfo; needSave = true; }
                 if(!appData.characters) { appData.characters = []; needSave = true; }
@@ -274,7 +275,6 @@
                 syncUI.style.color = "var(--deep-teal)"; 
             }
             
-            // LƯU BACKUP LOCAL LUÔN LUÔN
             try { await localforage.setItem('lovemap_backup', appData); } catch(e) { console.warn("Không thể lưu Local Backup"); }
 
             clearTimeout(saveTimeout);
@@ -305,17 +305,20 @@
         }
         function updateStudioLink(val) { appData.aiStudioLink = val; saveData(); renderStudioLink(); }
 
-        // --- AUDIO SYSTEM ---
+        // --- HỆ THỐNG PHÁT NHẠC MỚI (NON-REPEATING SHUFFLE) ---
         const audioEl = document.getElementById('bg-music');
         const musicBtn = document.getElementById('music-toggle');
         const musicContainer = document.getElementById('music-notes-container');
         let noteInterval; let isPlaying = false; let currentSongIndex = -1;
+        let unplayedSongs = []; // Mảng chứa các bài chưa được phát
 
         function addNewSongUrl() {
             const nameInput = document.getElementById('new-song-name');
             const urlInput = document.getElementById('new-song-url');
             if(!nameInput.value.trim() || !urlInput.value.trim()) { alert("Vui lòng nhập đủ Tên bài hát và Link MP3!"); return; }
             appData.playlist.push({ name: nameInput.value.trim(), data: urlInput.value.trim() });
+            
+            unplayedSongs = []; // Xóa túi bài hát để hệ thống tính toán lại từ đầu
             saveData(); renderPlaylistAdmin();
             nameInput.value = ''; urlInput.value = ''; 
         }
@@ -331,15 +334,33 @@
 
         function deleteSong(index) {
             if(confirm("Xóa bài hát này khỏi Playlist?")) {
-                appData.playlist.splice(index, 1); saveData(); renderPlaylistAdmin();
+                appData.playlist.splice(index, 1); 
+                unplayedSongs = []; // Reset lại túi bài hát
+                saveData(); renderPlaylistAdmin();
                 if(currentSongIndex === index) { audioEl.pause(); musicBtn.classList.remove('playing'); clearInterval(noteInterval); isPlaying = false; currentSongIndex = -1; audioEl.src = ""; } else if (currentSongIndex > index) { currentSongIndex--; }
             }
         }
 
         function playRandomSong() {
-            if(appData.playlist.length === 0) return;
-            if (appData.playlist.length === 1) { currentSongIndex = 0; } 
-            else { let nextIndex; do { nextIndex = Math.floor(Math.random() * appData.playlist.length); } while (nextIndex === currentSongIndex); currentSongIndex = nextIndex; }
+            if (!appData.playlist || appData.playlist.length === 0) return;
+
+            // Loại bỏ các index lỗi (nếu lỡ tay xóa bài)
+            let validUnplayed = unplayedSongs.filter(idx => idx >= 0 && idx < appData.playlist.length);
+            
+            // Nếu đã phát hết toàn bộ bài hát, tiến hành sạc lại túi bốc thăm mới
+            if (validUnplayed.length === 0) {
+                validUnplayed = appData.playlist.map((_, i) => i);
+                // Thuật toán xáo trộn mảng Fisher-Yates chuẩn
+                for (let i = validUnplayed.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [validUnplayed[i], validUnplayed[j]] = [validUnplayed[j], validUnplayed[i]];
+                }
+            }
+
+            // Rút 1 bài ra khỏi túi để phát
+            currentSongIndex = validUnplayed.pop();
+            unplayedSongs = validUnplayed; // Lưu lại các bài còn lại
+
             audioEl.src = appData.playlist[currentSongIndex].data;
             audioEl.play().catch(e => console.log("Autoplay bị chặn", e));
         }
@@ -347,7 +368,8 @@
         audioEl.addEventListener('ended', playRandomSong);
 
         musicBtn.addEventListener('click', () => {
-            if (isPlaying) { audioEl.pause(); musicBtn.classList.remove('playing'); clearInterval(noteInterval); isPlaying = false;
+            if (isPlaying) { 
+                audioEl.pause(); musicBtn.classList.remove('playing'); clearInterval(noteInterval); isPlaying = false;
             } else { 
                 if (appData.playlist && appData.playlist.length > 0) {
                     if (!audioEl.src || audioEl.ended || currentSongIndex === -1) { playRandomSong(); } else { audioEl.play().catch(() => alert("Lỗi phát nhạc!")); }
@@ -373,7 +395,6 @@
                 canvas.width = width; canvas.height = height;
                 let ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                // Nén ảnh thành chuẩn WebP
                 callback(canvas.toDataURL('image/webp', 0.7)); 
             };
         }
