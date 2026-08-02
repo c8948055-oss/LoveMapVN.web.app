@@ -224,55 +224,74 @@
         let currentOpenModalIndex = null;
         let currentUploadTarget = null; 
 
-        // --- FETCH DATA ---
+        // --- FETCH DATA (WITH LOCAL BACKUP FALLBACK) ---
         async function fetchInitialData() {
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
+                // Thử lấy dữ liệu từ Supabase trước
                 const { data, error } = await supabaseClient.from('lovemap').select('content').eq('id', 1).single();
+                
                 if (data && data.content) {
                     appData = data.content;
-                    let needSave = false;
-                    
-                    // Khôi phục mảng nếu DB trống (Bảo vệ lỗi nút "Tạo profile")
-                    if(!appData.showInfo) { appData.showInfo = defaultData.showInfo; needSave = true; }
-                    if(!appData.characters) { appData.characters = []; needSave = true; }
-                    if(!appData.playlist) { appData.playlist = []; needSave = true; }
-                    if(appData.aiStudioLink === undefined) { appData.aiStudioLink = ""; needSave = true; }
-                    
-                    if(appData.characters) {
-                        appData.characters.forEach(char => {
-                            if(!char.details) {
-                                char.details = [ { label: "Quê quán", value: char.hometown || "" }, { label: "Ngoại hình", value: char.appearance || "" }, { label: "Ấn tượng đầu", value: char.firstImpression || "" }, { label: "Thói quen giao tiếp", value: char.communication || "" }, { label: "Trong thử thách", value: char.behavior || "" } ];
-                                delete char.hometown; delete char.appearance; delete char.firstImpression; delete char.communication; delete char.behavior; needSave = true;
-                            }
-                        });
-                    }
-                    if(needSave) saveData(true); 
-                } else if (!data) { appData = defaultData; saveData(true); }
-            } catch (err) { console.error("Supabase load error:", err); appData = defaultData; }
+                } else {
+                    // Nếu Cloud trống, thử lấy từ LocalForage
+                    const localData = await localforage.getItem('lovemap_backup');
+                    appData = localData ? localData : defaultData;
+                }
+
+                // Chuẩn hóa dữ liệu
+                let needSave = false;
+                if(!appData.showInfo) { appData.showInfo = defaultData.showInfo; needSave = true; }
+                if(!appData.characters) { appData.characters = []; needSave = true; }
+                if(!appData.playlist) { appData.playlist = []; needSave = true; }
+                if(appData.aiStudioLink === undefined) { appData.aiStudioLink = ""; needSave = true; }
+                
+                if(appData.characters) {
+                    appData.characters.forEach(char => {
+                        if(!char.details) {
+                            char.details = [ { label: "Quê quán", value: char.hometown || "" }, { label: "Ngoại hình", value: char.appearance || "" }, { label: "Ấn tượng đầu", value: char.firstImpression || "" }, { label: "Thói quen giao tiếp", value: char.communication || "" }, { label: "Trong thử thách", value: char.behavior || "" } ];
+                            delete char.hometown; delete char.appearance; delete char.firstImpression; delete char.communication; delete char.behavior; needSave = true;
+                        }
+                    });
+                }
+                if(needSave) saveData(true); 
+            } catch (err) { 
+                console.error("Lỗi tải dữ liệu:", err); 
+                const localData = await localforage.getItem('lovemap_backup');
+                appData = localData ? localData : defaultData;
+            }
+            
             document.getElementById('loading-overlay').style.display = 'none';
             initApp();
         }
 
         let saveTimeout;
-        function saveData(silent = false) {
+        async function saveData(silent = false) {
             const syncUI = document.getElementById('sync-status');
-            if(!silent && syncUI) { syncUI.style.display = 'block'; syncUI.innerHTML = '<i class="fas fa-sync fa-spin"></i> Đang đồng bộ...'; syncUI.style.color = "var(--deep-teal)"; }
+            if(!silent && syncUI) { 
+                syncUI.style.display = 'block'; 
+                syncUI.innerHTML = '<i class="fas fa-sync fa-spin"></i> Đang đồng bộ...'; 
+                syncUI.style.color = "var(--deep-teal)"; 
+            }
+            
+            // LƯU BACKUP LOCAL LUÔN LUÔN
+            try { await localforage.setItem('lovemap_backup', appData); } catch(e) { console.warn("Không thể lưu Local Backup"); }
+
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => {
                 const { error } = await supabaseClient.from('lovemap').upsert({ id: 1, content: appData });
                 if(!silent && syncUI) {
                     if(error) {
-                        console.error("Lỗi đồng bộ:", error);
-                        syncUI.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lỗi đồng bộ (File quá nặng)';
-                        syncUI.style.color = "red";
+                        console.error("Lỗi đồng bộ Cloud:", error);
+                        syncUI.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lỗi Cloud! Đã lưu tạm trên máy.';
+                        syncUI.style.color = "#c0392b";
                     } else {
                         syncUI.innerHTML = '<i class="fas fa-check-circle"></i> Đã lưu Cloud';
                         syncUI.style.color = "green";
                         setTimeout(() => syncUI.style.display = 'none', 2000);
                     }
                 }
-            }, 1000);
+            }, 1500);
         }
 
         function initApp() { renderShowInfo(); renderCharacters(); renderStudioLink(); }
@@ -284,9 +303,9 @@
             if (appData.aiStudioLink && appData.aiStudioLink.trim() !== "") { linkBtn.href = appData.aiStudioLink; linkBtn.style.display = 'inline-block'; } else { linkBtn.href = "#"; linkBtn.style.display = isAdmin ? 'inline-block' : 'none'; }
             if (isAdmin) { linkInput.value = appData.aiStudioLink || ""; }
         }
-        function updateStudioLink(val) { appData.aiStudioLink = val; saveData(); const linkBtn = document.getElementById('ai-studio-link'); linkBtn.href = val || "#"; linkBtn.style.display = (val.trim() === "" && !isAdmin) ? 'none' : 'inline-block'; }
+        function updateStudioLink(val) { appData.aiStudioLink = val; saveData(); renderStudioLink(); }
 
-        // --- NEW MUSIC SYSTEM (URL BASED) ---
+        // --- AUDIO SYSTEM ---
         const audioEl = document.getElementById('bg-music');
         const musicBtn = document.getElementById('music-toggle');
         const musicContainer = document.getElementById('music-notes-container');
@@ -296,7 +315,6 @@
             const nameInput = document.getElementById('new-song-name');
             const urlInput = document.getElementById('new-song-url');
             if(!nameInput.value.trim() || !urlInput.value.trim()) { alert("Vui lòng nhập đủ Tên bài hát và Link MP3!"); return; }
-            
             appData.playlist.push({ name: nameInput.value.trim(), data: urlInput.value.trim() });
             saveData(); renderPlaylistAdmin();
             nameInput.value = ''; urlInput.value = ''; 
@@ -305,14 +323,9 @@
         function renderPlaylistAdmin() {
             const container = document.getElementById('playlist-admin-container');
             container.innerHTML = '<strong>Danh sách bài hát:</strong><br>';
-            if(!appData.playlist || appData.playlist.length === 0) { container.innerHTML += '<em>Chưa có bài hát nào trong danh sách.</em>'; return; }
+            if(!appData.playlist || appData.playlist.length === 0) { container.innerHTML += '<em>Chưa có bài hát nào.</em>'; return; }
             appData.playlist.forEach((song, index) => {
-                container.innerHTML += `
-                    <div class="playlist-item">
-                        <span class="song-name" title="${song.data}"><i class="fas fa-music"></i> ${song.name}</span>
-                        <button class="admin-btn delete small" style="position: static;" onclick="deleteSong(${index})"><i class="fas fa-trash"></i></button>
-                    </div>
-                `;
+                container.innerHTML += `<div class="playlist-item"><span class="song-name" title="${song.data}"><i class="fas fa-music"></i> ${song.name}</span><button class="admin-btn delete small" style="position: static;" onclick="deleteSong(${index})"><i class="fas fa-trash"></i></button></div>`;
             });
         }
 
@@ -331,7 +344,7 @@
             audioEl.play().catch(e => console.log("Autoplay bị chặn", e));
         }
 
-        audioEl.addEventListener('ended', () => { playRandomSong(); });
+        audioEl.addEventListener('ended', playRandomSong);
 
         musicBtn.addEventListener('click', () => {
             if (isPlaying) { audioEl.pause(); musicBtn.classList.remove('playing'); clearInterval(noteInterval); isPlaying = false;
@@ -339,7 +352,7 @@
                 if (appData.playlist && appData.playlist.length > 0) {
                     if (!audioEl.src || audioEl.ended || currentSongIndex === -1) { playRandomSong(); } else { audioEl.play().catch(() => alert("Lỗi phát nhạc!")); }
                     musicBtn.classList.add('playing'); spawnNotes(); isPlaying = true;
-                } else { alert("Chưa có bài nhạc nào trong danh sách! Xin vui lòng nhờ Admin thêm nhạc."); }
+                } else { alert("Chưa có bài nhạc nào trong danh sách!"); }
             }
         });
 
@@ -348,19 +361,57 @@
             noteInterval = setInterval(() => { const note = document.createElement('i'); const randomIcon = icons[Math.floor(Math.random() * icons.length)]; note.className = `fas ${randomIcon} floating-note`; note.style.left = Math.random() * 20 - 10 + 'px'; musicContainer.appendChild(note); setTimeout(() => note.remove(), 2500); }, 600);
         }
 
-        // TẢI ẢNH
+        // --- IMAGE COMPRESSION LOGIC ---
+        function compressImage(base64Str, maxWidth = 800, callback) {
+            let img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                let canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
+                canvas.width = width; canvas.height = height;
+                let ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                // Nén ảnh thành chuẩn WebP
+                callback(canvas.toDataURL('image/webp', 0.7)); 
+            };
+        }
+
+        // --- IMAGE UPLOAD ---
         function triggerGlobalImageUpload(type, index) { currentUploadTarget = { type: type, index: index }; const fileInput = document.getElementById('global-image-upload'); fileInput.value = ''; if(type === 'gallery') { fileInput.setAttribute('multiple', 'multiple'); } else { fileInput.removeAttribute('multiple'); } fileInput.click(); }
+        
         document.getElementById('global-image-upload').addEventListener('change', function(e) {
             const files = e.target.files; if (!files || files.length === 0) return;
-            const loadingOverlay = document.getElementById('loading-overlay'); document.getElementById('loading-text').innerText = "Đang xử lý ảnh..."; loadingOverlay.style.display = 'flex'; 
+            const loadingOverlay = document.getElementById('loading-overlay'); document.getElementById('loading-text').innerText = "Đang nén & xử lý ảnh..."; loadingOverlay.style.display = 'flex'; 
+            
             if (currentUploadTarget.type === 'avatar') {
-                const reader = new FileReader(); reader.onload = function(event) { appData.characters[currentUploadTarget.index].avatar = event.target.result; saveData(); openModal(currentUploadTarget.index); renderCharacters(); loadingOverlay.style.display = 'none'; }; reader.readAsDataURL(files[0]);
+                const reader = new FileReader(); 
+                reader.onload = function(event) { 
+                    compressImage(event.target.result, 600, (compressedBase64) => {
+                        appData.characters[currentUploadTarget.index].avatar = compressedBase64; 
+                        saveData(); openModal(currentUploadTarget.index); renderCharacters(); loadingOverlay.style.display = 'none';
+                    });
+                }; 
+                reader.readAsDataURL(files[0]);
             } else if (currentUploadTarget.type === 'gallery') {
-                if (!appData.characters[currentUploadTarget.index].gallery) { appData.characters[currentUploadTarget.index].gallery = []; } let loadedCount = 0;
-                for (let i = 0; i < files.length; i++) { const reader = new FileReader(); reader.onload = function(event) { appData.characters[currentUploadTarget.index].gallery.push(event.target.result); loadedCount++; if (loadedCount === files.length) { saveData(); openModal(currentUploadTarget.index); loadingOverlay.style.display = 'none'; } }; reader.readAsDataURL(files[i]); }
+                if (!appData.characters[currentUploadTarget.index].gallery) { appData.characters[currentUploadTarget.index].gallery = []; } 
+                let loadedCount = 0;
+                for (let i = 0; i < files.length; i++) { 
+                    const reader = new FileReader(); 
+                    reader.onload = function(event) { 
+                        compressImage(event.target.result, 800, (compressedBase64) => {
+                            appData.characters[currentUploadTarget.index].gallery.push(compressedBase64); 
+                            loadedCount++; 
+                            if (loadedCount === files.length) { saveData(); openModal(currentUploadTarget.index); loadingOverlay.style.display = 'none'; }
+                        });
+                    }; 
+                    reader.readAsDataURL(files[i]); 
+                }
             }
         });
 
+        // --- UI RENDERING & LOGIC ---
         function renderShowInfo() {
             const container = document.getElementById('show-info-container'); container.innerHTML = '';
             appData.showInfo.forEach((info, index) => {
@@ -379,15 +430,15 @@
             });
         }
 
-        function handleCardClick(index) { const char = appData.characters[index]; if (char.isLocked && !isAdmin) { const answer = prompt(`BẢO MẬT HỒ SƠ:\n${char.lockQuestion}\n\n(Vui lòng nhập câu trả lời để mở khóa)`); if (answer === null) return; if (answer.trim() !== "") { openModal(index); } else { alert("Bạn chưa nhập câu trả lời. Không thể mở hồ sơ này!"); } } else { openModal(index); } }
+        function handleCardClick(index) { const char = appData.characters[index]; if (char.isLocked && !isAdmin) { const answer = prompt(`BẢO MẬT HỒ SƠ:\n${char.lockQuestion}\n\n(Vui lòng nhập câu trả lời để mở khóa)`); if (answer === null) return; if (answer.trim() !== "") { openModal(index); } else { alert("Bạn chưa nhập câu trả lời!"); } } else { openModal(index); } }
 
         function openModal(index) {
             currentOpenModalIndex = index; const char = appData.characters[index]; const modalBody = document.getElementById('modal-body');
             let galleryImages = ''; if(char.gallery && char.gallery.length > 0) { char.gallery.forEach((img, i) => { galleryImages += `<div class="gallery-item" onclick="changeMainImg(this.querySelector('img').src)"><img src="${img}">${isAdmin ? `<button class="admin-btn small delete" onclick="removeGalleryImg(${index}, ${i})"><i class="fas fa-times"></i></button>` : ''}</div>`; }); }
             let detailsHtml = ''; if(!char.details) char.details = []; char.details.forEach((detail, i) => { if (isAdmin) { detailsHtml += `<div class="detail-block" style="display: flex; align-items: flex-start; gap: 10px;"><button class="admin-btn delete small" style="position: static; margin-top: 2px;" onclick="deleteDetail(${index}, ${i})" title="Xóa thông tin này"><i class="fas fa-trash"></i></button><div style="flex: 1;"><strong contenteditable="true" oninput="updateDetailLabel(${index}, ${i}, this.innerText)">${detail.label}</strong>: <span contenteditable="true" oninput="updateDetailValue(${index}, ${i}, this.innerText)">${detail.value}</span></div></div>`; } else { const val = detail.value.trim(); if (val !== '' && val !== '...' && val !== 'Chưa có thông tin') { detailsHtml += `<div class="detail-block"><strong>${detail.label}:</strong> <span>${detail.value}</span></div>`; } } });
             if (isAdmin) { detailsHtml += `<button class="admin-btn small" style="margin-top: 10px; position: static;" onclick="addDetail(${index})"><i class="fas fa-plus"></i> Thêm mục thông tin</button>`; }
-            let adminControls = isAdmin ? `<div style="margin-top: 10px; margin-bottom: 20px;"><button class="admin-btn" onclick="triggerGlobalImageUpload('avatar', ${index})"><i class="fas fa-portrait"></i> Tải Ảnh Đại Diện</button><button class="admin-btn delete" onclick="deleteCharacter(${index})"><i class="fas fa-trash"></i> Xóa Profile Toàn Diện</button></div><div class="lock-settings admin-only"><label><input type="checkbox" id="lock-checkbox" ${char.isLocked ? 'checked' : ''} onchange="updateLock(${index})"> Kích hoạt Khóa Profile Bí Ẩn (Làm mờ ảnh)</label><div id="lock-inputs" style="display: ${char.isLocked ? 'block' : 'none'};"><label>Câu hỏi gợi ý để mở khóa:</label><input type="text" id="lock-question" value="${char.lockQuestion || ''}" oninput="updateLockData(${index})" placeholder="Ví dụ: Ai là người hướng nội nhất?"></div></div>` : '';
-            modalBody.innerHTML = `<div class="modal-layout"><div class="modal-left"><img src="${char.avatar}" class="modal-main-img" id="main-modal-img" alt="${char.name}"><div class="gallery-container"><div class="gallery-title">Kho ảnh</div><div class="gallery-scroll-wrapper">${galleryImages}${isAdmin ? `<div class="gallery-add-btn" onclick="triggerGlobalImageUpload('gallery', ${index})" title="Thêm nhiều ảnh cùng lúc"><i class="fas fa-plus"></i></div>` : ''}</div></div></div><div class="modal-right">${adminControls}<h2 class="modal-title" ${isAdmin ? 'contenteditable="true"' : ''} oninput="updateCharName(${index}, this.innerText)">${char.name}</h2><div id="dynamic-details">${detailsHtml}</div></div></div>`; document.getElementById('character-modal').style.display = 'block';
+            let adminControls = isAdmin ? `<div style="margin-top: 10px; margin-bottom: 20px;"><button class="admin-btn" onclick="triggerGlobalImageUpload('avatar', ${index})"><i class="fas fa-portrait"></i> Tải Ảnh</button><button class="admin-btn delete" onclick="deleteCharacter(${index})"><i class="fas fa-trash"></i> Xóa Profile</button></div><div class="lock-settings admin-only"><label><input type="checkbox" id="lock-checkbox" ${char.isLocked ? 'checked' : ''} onchange="updateLock(${index})"> Khóa Profile</label><div id="lock-inputs" style="display: ${char.isLocked ? 'block' : 'none'};"><label>Câu hỏi mở khóa:</label><input type="text" id="lock-question" value="${char.lockQuestion || ''}" oninput="updateLockData(${index})"></div></div>` : '';
+            modalBody.innerHTML = `<div class="modal-layout"><div class="modal-left"><img src="${char.avatar}" class="modal-main-img" id="main-modal-img" alt="${char.name}"><div class="gallery-container"><div class="gallery-title">Kho ảnh</div><div class="gallery-scroll-wrapper">${galleryImages}${isAdmin ? `<div class="gallery-add-btn" onclick="triggerGlobalImageUpload('gallery', ${index})"><i class="fas fa-plus"></i></div>` : ''}</div></div></div><div class="modal-right">${adminControls}<h2 class="modal-title" ${isAdmin ? 'contenteditable="true"' : ''} oninput="updateCharName(${index}, this.innerText)">${char.name}</h2><div id="dynamic-details">${detailsHtml}</div></div></div>`; document.getElementById('character-modal').style.display = 'block';
         }
 
         function changeMainImg(src) { document.getElementById('main-modal-img').src = src; }
@@ -400,7 +451,7 @@
         function updateLockData(index) { appData.characters[index].lockQuestion = document.getElementById('lock-question').value; saveData(); }
         function updateInfo(index, field, value) { appData.showInfo[index][field] = value; saveData(); }
         function updateCharName(index, val) { appData.characters[index].name = val; saveData(); renderCharacters(); }
-        function deleteCharacter(index) { if(confirm("Xóa vĩnh viễn Profile này?")) { appData.characters.splice(index, 1); saveData(); document.getElementById('character-modal').style.display = 'none'; renderCharacters(); } }
+        function deleteCharacter(index) { if(confirm("Xóa Profile này?")) { appData.characters.splice(index, 1); saveData(); document.getElementById('character-modal').style.display = 'none'; renderCharacters(); } }
         
         document.getElementById('add-character-btn').addEventListener('click', () => { appData.characters.push({ id: Date.now(), name: "Tên Profile Mới", avatar: "https://via.placeholder.com/600x800.png?text=LoveMap+Avatar", details: [ { label: "Quê quán", value: "..." }, { label: "Ngoại hình", value: "..." }, { label: "Ấn tượng đầu", value: "..." }, { label: "Thói quen giao tiếp", value: "..." }, { label: "Trong thử thách", value: "..." } ], gallery: [], isLocked: false, lockQuestion: "" }); saveData(); renderCharacters(); });
         document.querySelector('.close-btn').addEventListener('click', () => { document.getElementById('character-modal').style.display = 'none'; }); window.onclick = function(event) { if (event.target == document.getElementById('character-modal')) { document.getElementById('character-modal').style.display = 'none'; } }
