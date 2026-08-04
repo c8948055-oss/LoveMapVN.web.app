@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Ép trình duyệt thiết bị di động chỉ sử dụng chế độ Light Mode -->
     <meta name="color-scheme" content="only light">
     <title>Love Map: Tọa Độ Tình Yêu</title>
     
@@ -25,11 +24,9 @@
             --font-body: 'Montserrat', sans-serif;
         }
 
-        /* KHÓA TRỤC X: CHỐNG CUỘN NGANG TUYỆT ĐỐI */
+        /* KHÓA TRỤC X: CHỐNG CUỘN NGANG TOÀN TRANG */
         html, body { max-width: 100vw; overflow-x: hidden; }
-
-        /* ÉP XUỐNG DÒNG: Chống text tràn viền */
-        * { box-sizing: border-box; margin: 0; padding: 0; overflow-wrap: break-word; word-wrap: break-word; }
+        * { box-sizing: border-box; margin: 0; padding: 0; overflow-wrap: break-word; word-break: break-word; }
         
         body { font-family: var(--font-body); background-color: #DAD2CB !important; color: #1d3336 !important; line-height: 1.6; padding: 20px; }
         .letter-container { max-width: 1000px; margin: 0 auto; background-color: #F7F4EE !important; padding: 40px 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #c9c1b9; position: relative; }
@@ -67,20 +64,26 @@
         .locked-avatar::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 94, 104, 0.4); z-index: 1; }
         .locked-avatar img { filter: blur(15px) brightness(0.8); transform: scale(1.15); }
 
+        /* KHẮC PHỤC TRIỆT ĐỂ BỐ CỤC MODAL (CHỐNG FLEX BLOWOUT) */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(29, 51, 54, 0.8); backdrop-filter: blur(5px); overflow-x: hidden; overflow-y: auto;}
-        .modal-content { background-color: #F7F4EE !important; margin: 3% auto; padding: 40px; border: 2px solid var(--deep-teal); width: 95%; max-width: 1000px; position: relative; color: #1d3336 !important; }
-        .close-btn { position: absolute; right: 15px; top: 10px; color: var(--deep-teal) !important; font-size: 35px; font-weight: bold; cursor: pointer; z-index: 10; line-height: 1; }
-        .modal-layout { display: flex; gap: 40px; flex-wrap: wrap; margin-top: 10px; }
-        .modal-left { flex: 1.2; min-width: 250px; display: flex; flex-direction: column; }
-        .modal-right { flex: 1; min-width: 250px; }
+        .modal-content { background-color: #F7F4EE !important; margin: 5vh auto; padding: 40px; border: 2px solid var(--deep-teal); width: 95%; max-width: 1000px; position: relative; color: #1d3336 !important; box-sizing: border-box; }
+        .close-btn { position: absolute; right: 20px; top: 15px; color: var(--deep-teal) !important; font-size: 35px; font-weight: bold; cursor: pointer; z-index: 101; line-height: 1; }
+        
+        .modal-layout { display: flex; gap: 40px; flex-wrap: wrap; margin-top: 10px; width: 100%; }
+        
+        /* Bắt buộc min-width: 0 để Flexbox không phình to theo phần tử con */
+        .modal-left { flex: 1.2; min-width: 0; max-width: 100%; display: flex; flex-direction: column; }
+        .modal-right { flex: 1; min-width: 0; max-width: 100%; }
+        
         .modal-main-img { width: 100%; height: auto; max-height: 65vh; object-fit: contain; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #ffffff !important; border-radius: 4px; }
-        .modal-title { font-family: var(--font-heading); color: var(--deep-teal) !important; font-size: 2.2rem; margin-bottom: 20px; border-bottom: 2px solid var(--warm-beige); padding-bottom: 10px; }
+        .modal-title { font-family: var(--font-heading); color: var(--deep-teal) !important; font-size: 2.2rem; margin-bottom: 20px; border-bottom: 2px solid var(--warm-beige); padding-bottom: 10px; word-wrap: break-word;}
         .detail-block { margin-bottom: 15px; line-height: 1.8; }
         .detail-block strong { color: var(--deep-teal) !important; font-family: var(--font-heading); font-size: 1.1rem; }
 
-        .gallery-container { margin-top: 20px; width: 100%; }
+        /* KHÓA CHIỀU RỘNG KHO ẢNH */
+        .gallery-container { margin-top: 20px; width: 100%; min-width: 0; max-width: 100%; overflow: hidden; }
         .gallery-title { font-family: var(--font-heading); color: var(--deep-teal) !important; margin-bottom: 10px; font-size: 1.3rem; }
-        .gallery-scroll-wrapper { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; flex-wrap: nowrap; align-items: stretch; scrollbar-width: thin; scrollbar-color: var(--deep-teal) var(--warm-beige); }
+        .gallery-scroll-wrapper { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; flex-wrap: nowrap; align-items: stretch; scrollbar-width: thin; scrollbar-color: var(--deep-teal) var(--warm-beige); width: 100%; }
         .gallery-scroll-wrapper::-webkit-scrollbar { height: 8px; }
         .gallery-scroll-wrapper::-webkit-scrollbar-track { background: var(--warm-beige); border-radius: 4px; }
         .gallery-scroll-wrapper::-webkit-scrollbar-thumb { background: var(--deep-teal); border-radius: 4px; }
@@ -97,7 +100,7 @@
         .admin-audio-panel { background: #ffffff !important; border: 1px dashed var(--deep-teal); padding: 20px; margin: 20px auto 0; width: 100%; max-width: 600px; text-align: left; color: #1d3336 !important;}
         .is-admin .admin-audio-panel { display: block !important; }
         .music-input-group { display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px;}
-        .music-input-group input { flex: 1; padding: 10px; border: 1px solid var(--warm-beige); min-width: 0; /* Khắc phục lỗi input bung width */ }
+        .music-input-group input { flex: 1; padding: 10px; border: 1px solid var(--warm-beige); min-width: 0; }
         
         .is-admin [contenteditable="true"] { outline: 1px dashed #c0392b; padding: 2px; background: rgba(192, 57, 43, 0.05); }
         .is-admin [contenteditable="true"]:focus { outline: 2px solid #c0392b; background: #ffffff !important; }
@@ -125,30 +128,36 @@
         .playlist-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--warm-beige); padding: 8px 0; gap: 10px;}
         .song-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; color: var(--deep-teal) !important; font-weight: 500;}
 
-        /* BỘ QUY TẮC MOBILE ĐƯỢC TỐI ƯU HÓA HOÀN TOÀN */
+        /* BỘ QUY TẮC DÀNH RIÊNG CHO MOBILE */
         @media (max-width: 768px) { 
-            body { padding: 10px; } /* Thu nhỏ padding toàn trang */
-            .letter-container { padding: 30px 15px; } /* Mở rộng không gian hiển thị bên trong container */
-            h1 { font-size: 1.6rem; letter-spacing: 1px; } /* Thu nhỏ tiêu đề H1 */
+            body { padding: 10px; }
+            .letter-container { padding: 30px 15px; } 
+            h1 { font-size: 1.6rem; letter-spacing: 1px; } 
             .section-title { font-size: 1.3rem; }
             .modal-layout { flex-direction: column; gap: 20px; } 
             .music-input-group { flex-direction: column; } 
             
-            /* Chia lưới thông minh: 2 cột trên điện thoại để tránh bị to quá mức */
             .cast-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; margin-top: 25px; }
             .cast-name { font-size: 1.1rem; }
             
-            /* Thu nhỏ 2 ô vuông góc */
             .letter-container::before { top: 10px; left: 10px; width: 20px; height: 20px; }
             .letter-container::after { bottom: 10px; right: 10px; width: 20px; height: 20px; }
             
-            /* Tối ưu hóa viền modal */
-            .modal-content { padding: 25px 15px; width: 95%; margin: 10% auto; }
-            .modal-title { font-size: 1.6rem; }
-            .gallery-item img { max-width: 150px; }
+            /* Cấu trúc lại khung Modal để vừa khít màn hình nhỏ */
+            .modal-content { 
+                padding: 40px 15px 25px 15px; /* Thêm đệm phía trên để chừa khoảng trống cho nút X */
+                width: 96%; 
+                margin: 5vh auto; 
+            }
+            .close-btn { 
+                top: 5px; 
+                right: 15px; /* Đẩy nút tắt vào sát lề an toàn */
+            }
+            .modal-main-img { max-height: 50vh; } /* Thu nhỏ ảnh chính đôi chút để nhường chỗ cho text */
+            .modal-title { font-size: 1.8rem; }
+            .gallery-item img { max-width: 120px; } /* Thu nhỏ ảnh trong kho */
             .admin-indicator { font-size: 0.7rem; padding: 4px 10px; }
             
-            /* Điều chỉnh các phần tử dài bên trong */
             #ai-studio-input { font-size: 0.9rem; }
             .accordion-header { font-size: 1rem; padding: 12px 15px; }
         }
@@ -329,7 +338,7 @@
         }
         function updateStudioLink(val) { appData.aiStudioLink = val; saveData(); renderStudioLink(); }
 
-        // --- HỆ THỐNG PHÁT NHẠC MỚI (NON-REPEATING SHUFFLE) ---
+        // --- HỆ THỐNG PHÁT NHẠC ---
         const audioEl = document.getElementById('bg-music');
         const musicBtn = document.getElementById('music-toggle');
         const musicContainer = document.getElementById('music-notes-container');
@@ -478,7 +487,7 @@
             let galleryImages = ''; if(char.gallery && char.gallery.length > 0) { char.gallery.forEach((img, i) => { galleryImages += `<div class="gallery-item" onclick="changeMainImg(this.querySelector('img').src)"><img src="${img}">${isAdmin ? `<button class="admin-btn small delete" onclick="removeGalleryImg(${index}, ${i})"><i class="fas fa-times"></i></button>` : ''}</div>`; }); }
             let detailsHtml = ''; if(!char.details) char.details = []; char.details.forEach((detail, i) => { if (isAdmin) { detailsHtml += `<div class="detail-block" style="display: flex; align-items: flex-start; gap: 10px;"><button class="admin-btn delete small" style="position: static; margin-top: 2px;" onclick="deleteDetail(${index}, ${i})" title="Xóa thông tin này"><i class="fas fa-trash"></i></button><div style="flex: 1;"><strong contenteditable="true" oninput="updateDetailLabel(${index}, ${i}, this.innerText)">${detail.label}</strong>: <span contenteditable="true" oninput="updateDetailValue(${index}, ${i}, this.innerText)">${detail.value}</span></div></div>`; } else { const val = detail.value.trim(); if (val !== '' && val !== '...' && val !== 'Chưa có thông tin') { detailsHtml += `<div class="detail-block"><strong>${detail.label}:</strong> <span>${detail.value}</span></div>`; } } });
             if (isAdmin) { detailsHtml += `<button class="admin-btn small" style="margin-top: 10px; position: static;" onclick="addDetail(${index})"><i class="fas fa-plus"></i> Thêm mục thông tin</button>`; }
-            let adminControls = isAdmin ? `<div style="margin-top: 10px; margin-bottom: 20px;"><button class="admin-btn" onclick="triggerGlobalImageUpload('avatar', ${index})"><i class="fas fa-portrait"></i> Tải Ảnh</button><button class="admin-btn delete" onclick="deleteCharacter(${index})"><i class="fas fa-trash"></i> Xóa Profile</button></div><div class="lock-settings admin-only"><label><input type="checkbox" id="lock-checkbox" ${char.isLocked ? 'checked' : ''} onchange="updateLock(${index})"> Khóa Profile</label><div id="lock-inputs" style="display: ${char.isLocked ? 'block' : 'none'};"><label>Câu hỏi mở khóa:</label><input type="text" id="lock-question" value="${char.lockQuestion || ''}" oninput="updateLockData(${index})"></div></div>` : '';
+            let adminControls = isAdmin ? `<div style="margin-top: 10px; margin-bottom: 20px;"><button class="admin-btn" onclick="triggerGlobalImageUpload('avatar', ${index})"><i class="fas fa-portrait"></i> Tải Ảnh Đại Diện</button><button class="admin-btn delete" onclick="deleteCharacter(${index})"><i class="fas fa-trash"></i> Xóa Profile</button></div><div class="lock-settings admin-only"><label><input type="checkbox" id="lock-checkbox" ${char.isLocked ? 'checked' : ''} onchange="updateLock(${index})"> Khóa Profile Bí Ẩn</label><div id="lock-inputs" style="display: ${char.isLocked ? 'block' : 'none'};"><label>Câu hỏi mở khóa:</label><input type="text" id="lock-question" value="${char.lockQuestion || ''}" oninput="updateLockData(${index})"></div></div>` : '';
             modalBody.innerHTML = `<div class="modal-layout"><div class="modal-left"><img src="${char.avatar}" class="modal-main-img" id="main-modal-img" alt="${char.name}"><div class="gallery-container"><div class="gallery-title">Kho ảnh</div><div class="gallery-scroll-wrapper">${galleryImages}${isAdmin ? `<div class="gallery-add-btn" onclick="triggerGlobalImageUpload('gallery', ${index})"><i class="fas fa-plus"></i></div>` : ''}</div></div></div><div class="modal-right">${adminControls}<h2 class="modal-title" ${isAdmin ? 'contenteditable="true"' : ''} oninput="updateCharName(${index}, this.innerText)">${char.name}</h2><div id="dynamic-details">${detailsHtml}</div></div></div>`; document.getElementById('character-modal').style.display = 'block';
         }
 
@@ -494,7 +503,7 @@
         function updateCharName(index, val) { appData.characters[index].name = val; saveData(); renderCharacters(); }
         function deleteCharacter(index) { if(confirm("Xóa Profile này?")) { appData.characters.splice(index, 1); saveData(); document.getElementById('character-modal').style.display = 'none'; renderCharacters(); } }
         
-        document.getElementById('add-character-btn').addEventListener('click', () => { appData.characters.push({ id: Date.now(), name: "Tên Profile Mới", avatar: "https://via.placeholder.com/600x800.png?text=LoveMap+Avatar", details: [ { label: "Quê quán", value: "..." }, { label: "Ngoại hình", value: "..." }, { label: "Ấn tượng đầu", value: "..." }, { label: "Thói quen giao tiếp", value: "..." }, { label: "Trong thử thách", value: "..." } ], gallery: [], isLocked: false, lockQuestion: "" }); saveData(); renderCharacters(); });
+        document.getElementById('add-character-btn').addEventListener('click', () => { appData.characters.push({ id: Date.now(), name: "Tên Profile", avatar: "https://via.placeholder.com/600x800.png?text=LoveMap+Avatar", details: [ { label: "Quê quán", value: "..." }, { label: "Ngoại hình", value: "..." }, { label: "Ấn tượng đầu", value: "..." }, { label: "Thói quen giao tiếp", value: "..." }, { label: "Trong thử thách", value: "..." } ], gallery: [], isLocked: false, lockQuestion: "" }); saveData(); renderCharacters(); });
         document.querySelector('.close-btn').addEventListener('click', () => { document.getElementById('character-modal').style.display = 'none'; }); window.onclick = function(event) { if (event.target == document.getElementById('character-modal')) { document.getElementById('character-modal').style.display = 'none'; } }
         
         document.getElementById('main-title').addEventListener('dblclick', () => {
